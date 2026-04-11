@@ -1,0 +1,417 @@
+.ahp-root {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+}
+
+.ahp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.ahp-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border: 1px solid var(--lab-border);
+  background: var(--lab-panel);
+  color: var(--lab-text);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.ahp-toolbar-btn:hover {
+  border-color: var(--lab-accent);
+  background: rgba(0, 87, 255, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 87, 255, 0.1);
+}
+
+.ahp-toolbar-btn--primary {
+  background: var(--lab-accent);
+  border-color: var(--lab-accent);
+  color: #fff;
+}
+
+.ahp-toolbar-btn--primary:hover {
+  background: #0046cc;
+  border-color: #0046cc;
+  box-shadow: 0 2px 8px rgba(0, 87, 255, 0.3);
+}
+
+.ahp-toolbar-error {
+  font-size: 0.68rem;
+  color: #FF3B5C;
+  font-weight: 600;
+  padding: 6px 10px;
+  background: #FFF0F3;
+  border: 1px solid rgba(255, 59, 92, 0.3);
+  border-radius: 6px;
+}
+
+.ahp-step-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.ahp-step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--lab-accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.ahp-card {
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 22px;
+}
+
+.ahp-config-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-end;
+}
+
+.ahp-field-label {
+  font-size: 0.58rem;
+  color: var(--lab-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.ahp-select {
+  appearance: none;
+  background: var(--lab-bg);
+  border: 1px solid var(--lab-border);
+  border-radius: 8px;
+  color: var(--lab-text);
+  padding: 8px 30px 8px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  outline: none;
+  min-width: 150px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%230057FF' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ahp-name-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  flex: 1;
+}
+
+.ahp-name-input {
+  background: var(--lab-bg);
+  border: 1px solid var(--lab-border);
+  border-radius: 7px;
+  color: var(--lab-text);
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.ahp-name-input:focus {
+  border-color: var(--lab-accent);
+  box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.1);
+}
+
+.ahp-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.ahp-comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
+}
+
+.ahp-comp-card {
+  background: var(--lab-bg);
+  border: 1px solid var(--lab-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ahp-calc-btn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 13px 24px;
+  background: linear-gradient(135deg, var(--lab-accent) 0%, #3b82f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 87, 255, 0.22);
+  transition: opacity 0.18s, transform 0.12s;
+}
+
+.ahp-calc-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.ahp-calc-btn:disabled {
+  opacity: 0.65;
+  transform: none;
+  cursor: default;
+}
+
+.ahp-sticky-col {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.ahp-matrix-wrap {
+  overflow-x: auto;
+}
+
+.ahp-matrix-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.78rem;
+}
+
+.ahp-matrix-table th,
+.ahp-matrix-table td {
+  border: 1px solid var(--lab-border);
+}
+
+.ahp-matrix-top-left {
+  background: transparent;
+  border: none;
+  padding: 8px;
+}
+
+.ahp-matrix-th {
+  background: var(--lab-panel-2);
+  color: var(--lab-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 6px 8px;
+  text-align: center;
+  max-width: 52px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ahp-matrix-row-head {
+  background: var(--lab-panel-2);
+  color: var(--lab-text);
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 0 10px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ahp-matrix-cell {
+  width: 52px;
+  height: 46px;
+  text-align: center;
+  font-family: "DM Mono", monospace;
+  font-size: 0.8rem;
+  transition: background 0.18s;
+}
+
+.ahp-results-card {
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+
+.ahp-results-title {
+  margin-bottom: 14px;
+}
+
+.ahp-weight-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.ahp-weight-name {
+  font-size: 0.7rem;
+  color: var(--lab-text);
+  width: 105px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.ahp-weight-track {
+  flex: 1;
+  background: var(--lab-border);
+  border-radius: 4px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.ahp-weight-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.ahp-weight-pct {
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 42px;
+  text-align: right;
+}
+
+.ahp-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  color: var(--lab-muted);
+  gap: 10px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1.5px dashed var(--lab-border);
+  border-radius: 12px;
+  background: var(--lab-panel);
+}
+
+.ahp-placeholder-icon {
+  font-size: 1.4rem;
+  opacity: 0.25;
+}
+
+.ahp-slider-wrap {
+  position: relative;
+  padding: 2px 0 22px;
+}
+
+.ahp-slider-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ahp-slider-name {
+  font-size: 0.68rem;
+  color: var(--lab-muted);
+  max-width: 42%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.ahp-slider-name-right {
+  text-align: right;
+}
+
+.ahp-slider-track-wrap {
+  padding: 0 7px;
+}
+
+.ahp-slider-track {
+  height: 5px;
+  background: var(--lab-border);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+
+.ahp-slider-fill {
+  height: 100%;
+  border-radius: 3px;
+  position: absolute;
+  transition: all 0.12s;
+}
+
+.ahp-slider-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--lab-bg);
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.ahp-slider-ticks {
+  position: relative;
+  height: 16px;
+  margin: 6px 7px 0;
+}
+
+.ahp-slider-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.52rem;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.ahp-winner-line {
+  text-align: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  margin-top: 5px;
+}
+
+@media (max-width: 1200px) {
+  .ahp-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .ahp-sticky-col {
+    position: static;
+  }
+}

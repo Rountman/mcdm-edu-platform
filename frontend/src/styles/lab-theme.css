@@ -1,0 +1,39 @@
+:root {
+  --lab-accent: #0057ff;
+  --lab-accent-2: #ff3b5c;
+  --lab-bg: #ffffff;
+  --lab-panel: #f5f7fa;
+  --lab-panel-2: #eef1f6;
+  --lab-border: #dde3ed;
+  --lab-text: #0d1526;
+  --lab-muted: #8896ae;
+}
+
+.lab-shell {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  color: var(--lab-text);
+}
+
+.lab-shell .lab-title {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+.lab-shell .lab-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--lab-muted);
+  font-size: 0.86rem;
+}
+
+.lab-shell.lab-panel {
+  border: 1px solid var(--lab-border);
+  background: var(--lab-bg);
+  border-radius: 16px;
+  overflow: visible;
+}
+
+.lab-shell .lab-tabs {
+  border-bottom: 1px solid var(--lab-border);
+  background: var(--lab-panel);
+}

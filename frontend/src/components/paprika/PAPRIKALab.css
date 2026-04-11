@@ -1,0 +1,175 @@
+.pap-root {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+}
+
+/* Toolbar */
+.pap-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.pap-tbtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--lab-border);
+  background: var(--lab-panel); color: var(--lab-text);
+  transition: border-color 0.15s, background 0.15s;
+}
+.pap-tbtn:hover { border-color: var(--lab-accent); background: rgba(0,87,255,0.05); }
+.pap-tbtn--primary { background: var(--lab-accent); border-color: var(--lab-accent); color: #fff; }
+.pap-tbtn--primary:hover { background: #0046cc; }
+.pap-tbtn-error {
+  font-size: 0.68rem; color: #FF3B5C; font-weight: 600;
+  padding: 6px 10px; background: #FFF0F3;
+  border: 1px solid rgba(255,59,92,0.3); border-radius: 6px;
+}
+
+/* Card */
+.pap-card {
+  background: var(--lab-panel); border: 1px solid var(--lab-border);
+  border-radius: 14px; padding: 20px 22px; margin-bottom: 18px;
+}
+
+/* Step tag */
+.pap-step-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--lab-muted); font-weight: 600; margin-bottom: 16px; width: 100%;
+}
+.pap-step-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 4px;
+  background: var(--lab-accent); color: #fff; font-size: 0.6rem; font-weight: 700;
+}
+
+/* Config */
+.pap-config-row { display: flex; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+.pap-field-label {
+  font-size: 0.58rem; color: var(--lab-muted); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 5px; font-weight: 600;
+}
+.pap-select {
+  appearance: none; background: var(--lab-bg); border: 1px solid var(--lab-border);
+  border-radius: 8px; color: var(--lab-text); padding: 8px 30px 8px 12px;
+  font-size: 0.82rem; cursor: pointer; outline: none; min-width: 120px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%230057FF' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+
+/* Names row */
+.pap-names-row { display: flex; gap: 24px; flex-wrap: wrap; }
+.pap-name-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.pap-name-input {
+  background: var(--lab-bg); border: 1px solid var(--lab-border);
+  border-radius: 7px; color: var(--lab-text); padding: 6px 9px;
+  font-size: 0.78rem; outline: none; width: 100%; box-sizing: border-box;
+  transition: border-color 0.18s;
+}
+.pap-name-input:focus { border-color: var(--lab-accent); box-shadow: 0 0 0 3px rgba(0,87,255,0.1); }
+
+/* Ratings table */
+.pap-table-wrap { overflow-x: auto; }
+.pap-table { border-collapse: collapse; width: 100%; font-size: 0.78rem; }
+.pap-table th, .pap-table td { border: 1px solid var(--lab-border); }
+.pap-th-empty { border: none; background: transparent; width: 100px; }
+.pap-th { background: var(--lab-panel-2); color: var(--lab-muted); padding: 7px 10px; text-align: center; font-size: 0.65rem; font-weight: 600; min-width: 80px; }
+.pap-td-alt { padding: 6px 10px; font-weight: 600; color: var(--lab-text); white-space: nowrap; }
+.pap-td { padding: 5px 8px; text-align: center; }
+.pap-rating-input {
+  width: 56px; background: var(--lab-bg); border: 1px solid var(--lab-border);
+  border-radius: 6px; color: var(--lab-text); padding: 5px 6px;
+  font-size: 0.78rem; font-family: "DM Mono", monospace;
+  text-align: center; outline: none; transition: border-color 0.15s;
+}
+.pap-rating-input:focus { border-color: var(--lab-accent); box-shadow: 0 0 0 2px rgba(0,87,255,0.1); }
+
+/* Comparison cards */
+.pap-comp-intro {
+  font-size: 0.76rem; color: var(--lab-muted); line-height: 1.55;
+  margin: 0 0 16px; padding: 10px 12px;
+  background: var(--lab-panel-2); border-radius: 8px;
+  border: 1px solid var(--lab-border);
+}
+.pap-comp-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;
+}
+.pap-comp-card {
+  background: var(--lab-bg); border: 1px solid var(--lab-border);
+  border-radius: 12px; padding: 14px 16px;
+}
+.pap-comp-card--done { border-color: rgba(0,87,255,0.35); background: rgba(0,87,255,0.02); }
+.pap-comp-label {
+  font-size: 0.68rem; font-weight: 700; color: var(--lab-muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 10px; text-align: center;
+}
+.pap-comp-vs { color: var(--lab-border); margin: 0 6px; }
+.pap-comp-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.pap-choice {
+  border: 1.5px solid var(--lab-border); border-radius: 9px;
+  padding: 10px 8px; cursor: pointer;
+  background: var(--lab-panel); text-align: center;
+  transition: border-color 0.16s, background 0.16s, transform 0.12s;
+}
+.pap-choice:hover {
+  border-color: var(--lab-accent); background: rgba(0,87,255,0.05);
+  transform: translateY(-1px);
+}
+.pap-choice--selected {
+  border-color: var(--lab-accent); background: rgba(0,87,255,0.1);
+  box-shadow: 0 2px 8px rgba(0,87,255,0.15);
+}
+.pap-choice-header {
+  font-size: 0.75rem; font-weight: 700; color: var(--lab-text); margin-bottom: 6px;
+}
+.pap-choice--selected .pap-choice-header { color: var(--lab-accent); }
+.pap-choice-vals { display: flex; flex-direction: column; gap: 3px; }
+.pap-choice-hi { font-size: 0.62rem; color: #059669; font-weight: 600; }
+.pap-choice-lo { font-size: 0.62rem; color: var(--lab-muted); font-weight: 500; }
+
+/* Bottom section */
+.pap-two-col { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: start; }
+.pap-warn {
+  font-size: 0.72rem; color: #B45309; background: #FFFBEC;
+  border: 1px solid #F59E0B; border-radius: 7px;
+  padding: 8px 12px; margin-bottom: 10px;
+}
+.pap-calc-btn {
+  width: 100%; padding: 13px 24px;
+  background: linear-gradient(135deg, var(--lab-accent) 0%, #3b82f6 100%);
+  color: #fff; border: none; border-radius: 9px;
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,87,255,0.22);
+  transition: opacity 0.18s, transform 0.12s;
+}
+.pap-calc-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.pap-calc-btn:disabled { opacity: 0.5; transform: none; cursor: default; }
+
+.pap-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 160px; color: var(--lab-muted); gap: 10px;
+  font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1.5px dashed var(--lab-border); border-radius: 12px; background: var(--lab-panel);
+}
+.pap-placeholder-icon { font-size: 1.4rem; opacity: 0.25; }
+
+/* Results */
+.pap-results { background: var(--lab-panel); border: 1px solid var(--lab-border); border-radius: 14px; padding: 18px 20px; }
+.pap-res-section { margin-bottom: 18px; }
+.pap-res-section:last-child { margin-bottom: 0; }
+.pap-res-label { font-size: 0.58rem; color: var(--lab-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+.pap-res-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.pap-res-rank { font-size: 0.7rem; font-weight: 700; font-family: "DM Mono", monospace; min-width: 26px; }
+.pap-res-name { font-size: 0.7rem; font-weight: 600; color: var(--lab-text); min-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pap-res-wins { font-size: 0.62rem; color: var(--lab-muted); min-width: 60px; text-align: right; }
+.pap-res-track { flex: 1; height: 7px; background: var(--lab-border); border-radius: 4px; overflow: hidden; }
+.pap-res-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.pap-res-bar--w { background: linear-gradient(90deg, var(--lab-accent), #60A5FA); }
+.pap-res-pct { font-size: 0.7rem; font-weight: 700; font-family: "DM Mono", monospace; min-width: 42px; text-align: right; }
+
+@media (max-width: 900px) {
+  .pap-two-col { grid-template-columns: 1fr; }
+}
