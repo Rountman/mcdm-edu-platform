@@ -55,44 +55,58 @@ export default function SensitivityTheory() {
         <span className="snst-badge">Jak číst graf</span>
         <h3 className="snst-h3">Interpretace grafu citlivosti</h3>
         <div className="snst-chart-demo">
-          <svg viewBox="0 0 500 220" className="snst-demo-svg" aria-hidden="true">
+          {/*
+            Coordinate system:
+              x(pct)   = 65 + pct  * 4.5   (0 % → 65, 100 % → 515)
+              y(score) = 210 - score * 1.9  (0 % → 210, 100 % → 20)
+
+            Curve A scores: 75 % → 56 %   (gently declining)
+            Curve B scores: 12 % → 69 %   (steeply rising)
+
+            Intersection between 75 % and 100 % (x 403–515):
+              y_A = 91 + k·12,  y_B = 101 − k·22   (k = (x−403)/112)
+              91 + 12k = 101 − 22k  →  k = 10/34 ≈ 0.294
+              x ≈ 436,  y ≈ 95   →  ~82 % weight
+          */}
+          <svg viewBox="0 0 560 248" className="snst-demo-svg" aria-hidden="true">
             {/* Axes */}
-            <line x1="60" y1="180" x2="460" y2="180" stroke="#DDE3ED" strokeWidth="1.5"/>
-            <line x1="60" y1="20"  x2="60"  y2="180" stroke="#DDE3ED" strokeWidth="1.5"/>
-            {/* Grid lines */}
-            {[0.25, 0.5, 0.75].map((f, i) => (
-              <line key={i} x1="60" y1={180 - f * 160} x2="460" y2={180 - f * 160}
+            <line x1="65" y1="210" x2="515" y2="210" stroke="#DDE3ED" strokeWidth="1.5"/>
+            <line x1="65" y1="18"  x2="65"  y2="210" stroke="#DDE3ED" strokeWidth="1.5"/>
+            {/* Grid lines at 25 %, 50 %, 75 % */}
+            {[25, 50, 75].map(v => (
+              <line key={v} x1="65" y1={Math.round(210 - v * 1.9)} x2="515" y2={Math.round(210 - v * 1.9)}
                 stroke="#EEF1F6" strokeWidth="1" strokeDasharray="4 3"/>
             ))}
             {/* Axis labels */}
-            <text x="260" y="200" textAnchor="middle" fontSize="10" fill="#8896AE">Váha kritéria K₁ (%)</text>
-            <text x="14" y="100" textAnchor="middle" fontSize="10" fill="#8896AE" transform="rotate(-90,14,100)">Skóre alternativy (%)</text>
+            <text x="290" y="244" textAnchor="middle" fontSize="11" fill="#8896AE">Váha kritéria K₁ (%)</text>
+            <text x="15" y="114" textAnchor="middle" fontSize="11" fill="#8896AE" transform="rotate(-90,15,114)">Skóre alternativy (%)</text>
             {/* X ticks */}
-            {[0,25,50,75,100].map((v,i) => (
-              <text key={i} x={60 + v * 4} y="192" textAnchor="middle" fontSize="9" fill="#8896AE">{v}</text>
+            {[0,25,50,75,100].map(v => (
+              <text key={v} x={65 + v * 4.5} y="223" textAnchor="middle" fontSize="10" fill="#8896AE">{v}</text>
             ))}
             {/* Y ticks */}
-            {[0,25,50,75,100].map((v,i) => (
-              <text key={i} x="54" y={183 - v * 1.6} textAnchor="end" fontSize="9" fill="#8896AE">{v}</text>
+            {[0,25,50,75,100].map(v => (
+              <text key={v} x="59" y={Math.round(214 - v * 1.9)} textAnchor="end" fontSize="10" fill="#8896AE">{v}</text>
             ))}
-            {/* Curve A - starts high, stays high */}
-            <polyline points="60,60 160,65 260,72 360,80 460,90"
+            {/* Curve A — score: 75 % at 0 % weight → 56 % at 100 % weight */}
+            <polyline points="65,68 178,73 290,82 403,91 515,103"
               fill="none" stroke="#0057FF" strokeWidth="2.5"/>
-            {/* Curve B - starts low, rises */}
-            <polyline points="60,160 160,140 260,108 360,88 460,70"
+            {/* Curve B — score: 12 % at 0 % weight → 69 % at 100 % weight */}
+            <polyline points="65,187 178,163 290,125 403,101 515,79"
               fill="none" stroke="#FF3B5C" strokeWidth="2.5"/>
-            {/* Crossover region marker */}
-            <circle cx="325" cy="85" r="8" fill="none" stroke="#F59E0B" strokeWidth="2"/>
-            <text x="325" y="75" textAnchor="middle" fontSize="9" fill="#F59E0B" fontWeight="700">!</text>
-            {/* Current weight line */}
-            <line x1="200" y1="20" x2="200" y2="180" stroke="#8896AE" strokeWidth="1.5" strokeDasharray="5 4"/>
-            <text x="200" y="16" textAnchor="middle" fontSize="9" fill="#8896AE">Aktuální</text>
-            {/* Labels */}
-            <text x="465" y="92" fontSize="10" fill="#0057FF" fontWeight="700">A</text>
-            <text x="465" y="73" fontSize="10" fill="#FF3B5C" fontWeight="700">B</text>
-            {/* Annotation crossover */}
-            <text x="336" y="105" fontSize="9" fill="#F59E0B">Přechodový</text>
-            <text x="336" y="115" fontSize="9" fill="#F59E0B">bod</text>
+            {/* Current weight line at 35 %  →  x = 65 + 35·4.5 = 222 */}
+            <line x1="222" y1="20" x2="222" y2="210" stroke="#8896AE" strokeWidth="1.5" strokeDasharray="5 4"/>
+            <text x="222" y="14" textAnchor="middle" fontSize="10" fill="#8896AE">Aktuální</text>
+            {/* Crossover at x≈436, y≈95  (~82 % weight) — computed above */}
+            <circle cx="436" cy="95" r="10" fill="rgba(245,158,11,0.08)" stroke="#F59E0B" strokeWidth="2.5"/>
+            <text x="436" y="99" textAnchor="middle" fontSize="10" fill="#F59E0B" fontWeight="800">!</text>
+            {/* Leader line + annotation above the circle */}
+            <line x1="436" y1="85" x2="436" y2="73" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="2 2" opacity="0.7"/>
+            <text x="436" y="68" textAnchor="middle" fontSize="10" fill="#F59E0B" fontWeight="700">Přechodový bod</text>
+            <text x="436" y="57" textAnchor="middle" fontSize="9.5" fill="#F59E0B">~ 82 % váhy</text>
+            {/* Curve labels */}
+            <text x="520" y="106" fontSize="11" fill="#0057FF" fontWeight="700">A</text>
+            <text x="520" y="82"  fontSize="11" fill="#FF3B5C" fontWeight="700">B</text>
           </svg>
           <div className="snst-chart-legend">
             <div className="snst-legend-item">
@@ -126,10 +140,11 @@ export default function SensitivityTheory() {
         <h3 className="snst-h3">5 kroků analýzy citlivosti <span className="snst-h3-hint">— klikněte pro detail</span></h3>
         <div className="snst-steps">
           {STEPS.map((s, i) => (
-            <div key={s.n}
+            <button key={s.n} type="button"
               className={`snst-step${openStep === i ? ' snst-step--open' : ''}`}
               style={{ '--sc': s.color }}
               onClick={() => setOpenStep(openStep === i ? null : i)}
+              aria-expanded={openStep === i}
             >
               <div className="snst-step-n" style={{ background: s.color }}>{s.n}</div>
               <div className="snst-step-inner">
@@ -137,7 +152,7 @@ export default function SensitivityTheory() {
                 {openStep === i && <p className="snst-step-body">{s.body}</p>}
               </div>
               <div className={`snst-step-chevron${openStep === i ? ' snst-step-chevron--open' : ''}`} style={{ color: s.color }}>›</div>
-            </div>
+            </button>
           ))}
         </div>
       </section>

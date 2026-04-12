@@ -163,11 +163,13 @@ export default function AHPTheory() {
         </h3>
         <div className="ahpt-steps">
           {STEPS.map((s, i) => (
-            <div
+            <button
               key={s.n}
+              type="button"
               className={`ahpt-step${openStep === i ? ' ahpt-step--open' : ''}`}
               style={{ '--sc': s.color }}
               onClick={() => setOpenStep(openStep === i ? null : i)}
+              aria-expanded={openStep === i}
             >
               <div className="ahpt-step-n" style={{ background: s.color }}>{s.n}</div>
               <div className="ahpt-step-inner">
@@ -176,7 +178,7 @@ export default function AHPTheory() {
               </div>
               <div className={`ahpt-step-chevron${openStep === i ? ' ahpt-step-chevron--open' : ''}`}
                 style={{ color: s.color }}>›</div>
-            </div>
+            </button>
           ))}
         </div>
       </section>

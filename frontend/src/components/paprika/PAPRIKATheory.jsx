@@ -109,11 +109,13 @@ export default function PAPRIKATheory() {
         <h3 className="papt-h3">5 kroků metody PAPRIKA <span className="papt-h3-hint">— klikněte pro detail</span></h3>
         <div className="papt-steps">
           {STEPS.map((s, i) => (
-            <div
+            <button
               key={s.n}
+              type="button"
               className={`papt-step${openStep === i ? ' papt-step--open' : ''}`}
               style={{ '--sc': s.color }}
               onClick={() => setOpenStep(openStep === i ? null : i)}
+              aria-expanded={openStep === i}
             >
               <div className="papt-step-n" style={{ background: s.color }}>{s.n}</div>
               <div className="papt-step-inner">
@@ -122,7 +124,7 @@ export default function PAPRIKATheory() {
               </div>
               <div className={`papt-step-chevron${openStep === i ? ' papt-step-chevron--open' : ''}`}
                 style={{ color: s.color }}>›</div>
-            </div>
+            </button>
           ))}
         </div>
       </section>

@@ -3,6 +3,7 @@ import './AHPInputTable.css';
 import AHPResults from './AHPResults';
 import SaatySlider from './SaatySlider';
 import { ACCENT, ACCENT2, MUTED, PANEL2, TEXT } from './ahp.constants';
+import { downloadJson } from '../../utils/downloadJson';
 
 const SCHEMA_VERSION = '1';
 const DEFAULT_NAMES = Array.from({ length: 8 }, (_, i) => `K${i + 1}`);
@@ -59,7 +60,7 @@ export default function AHPInputTable() {
 
   const handleExport = () => {
     const names = criteriaNames.slice(0, size);
-    const payload = {
+    downloadJson({
       version: SCHEMA_VERSION,
       method: 'AHP',
       savedAt: new Date().toISOString(),
@@ -67,14 +68,7 @@ export default function AHPInputTable() {
       criteriaNames: names,
       matrix,
       weights: results?.weights ?? null,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ahp-session-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    }, `ahp-session-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
   const handleImportFile = (e) => {
@@ -116,11 +110,11 @@ export default function AHPInputTable() {
           style={{ display: 'none' }}
           onChange={handleImportFile}
         />
-        <button className="ahp-toolbar-btn" onClick={() => fileInputRef.current?.click()}>
+        <button type="button" className="ahp-toolbar-btn" onClick={() => fileInputRef.current?.click()}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
           Načíst data
         </button>
-        <button className="ahp-toolbar-btn ahp-toolbar-btn--primary" onClick={handleExport}>
+        <button type="button" className="ahp-toolbar-btn ahp-toolbar-btn--primary" onClick={handleExport}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
           Uložit data
         </button>
@@ -181,7 +175,7 @@ export default function AHPInputTable() {
               </div>
             ))}
           </div>
-          <button className="ahp-calc-btn" onClick={handleCalc} disabled={loading}>
+          <button type="button" className="ahp-calc-btn" onClick={handleCalc} disabled={loading}>
             {loading ? 'Počítám...' : 'Vypočítat váhy'}
           </button>
         </div>

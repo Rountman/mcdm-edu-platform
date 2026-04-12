@@ -64,6 +64,7 @@
   border: 1px solid var(--lab-border); border-left: 3px solid var(--sc, var(--lab-border));
   border-radius: 10px; cursor: pointer;
   transition: background 0.16s, box-shadow 0.16s; user-select: none;
+  width: 100%; text-align: left; font-family: inherit; font-size: inherit;
 }
 .papt-step:hover { background: rgba(0,87,255,0.03); }
 .papt-step--open { background: rgba(0,87,255,0.03); border-color: var(--sc); }

@@ -46,17 +46,17 @@ export default function DecisionTreeTheory() {
         <h3 className="dtt-h3">Typy uzlů rozhodovacího stromu</h3>
         <div className="dtt-nodes-grid">
           <div className="dtt-node-card dtt-node-card--dec">
-            <svg width="44" height="44" viewBox="0 0 44 44"><rect x="4" y="4" width="36" height="36" rx="6" fill="#0057FF"/><text x="22" y="27" textAnchor="middle" fontSize="18" fill="white" fontWeight="700">□</text></svg>
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="4" width="36" height="36" rx="6" fill="#0057FF"/><text x="22" y="27" textAnchor="middle" fontSize="18" fill="white" fontWeight="700">□</text></svg>
             <div className="dtt-nc-title">Rozhodovací uzel</div>
             <div className="dtt-nc-desc">Čtverec — zde rozhodujete vy. Vyberte větev s nejvyšší EMV. Výsledkem je maximalizace očekávané hodnoty.</div>
           </div>
           <div className="dtt-node-card dtt-node-card--chance">
-            <svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="#F59E0B"/><text x="22" y="27" textAnchor="middle" fontSize="18" fill="white" fontWeight="700">○</text></svg>
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="#F59E0B"/><text x="22" y="27" textAnchor="middle" fontSize="18" fill="white" fontWeight="700">○</text></svg>
             <div className="dtt-nc-title">Náhodový uzel</div>
             <div className="dtt-nc-desc">Kruh — příroda rozhoduje. Větve mají pravděpodobnosti, jejichž součet musí být 1. EMV = Σ(p·v).</div>
           </div>
           <div className="dtt-node-card dtt-node-card--term">
-            <svg width="44" height="44" viewBox="0 0 44 44"><rect x="4" y="10" width="36" height="24" rx="6" fill="#059669"/><text x="22" y="27" textAnchor="middle" fontSize="11" fill="white" fontWeight="700">Kč</text></svg>
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><rect x="4" y="10" width="36" height="24" rx="6" fill="#059669"/><text x="22" y="27" textAnchor="middle" fontSize="11" fill="white" fontWeight="700">Kč</text></svg>
             <div className="dtt-nc-title">Terminální uzel</div>
             <div className="dtt-nc-desc">Listu stromu — konec scénáře. Obsahuje konkrétní výslednou hodnotu (výnos nebo ztrátu).</div>
           </div>
@@ -122,15 +122,19 @@ export default function DecisionTreeTheory() {
         <h3 className="dtt-h3">5 kroků sestavení stromu <span className="dtt-h3-hint">— klikněte pro detail</span></h3>
         <div className="dtt-steps">
           {STEPS.map((s, i) => (
-            <div key={s.n} className={`dtt-step${openStep===i?' dtt-step--open':''}`}
-              style={{ '--sc': s.color }} onClick={() => setOpenStep(openStep===i?null:i)}>
+            <button key={s.n} type="button"
+              className={`dtt-step${openStep===i?' dtt-step--open':''}`}
+              style={{ '--sc': s.color }}
+              onClick={() => setOpenStep(openStep===i?null:i)}
+              aria-expanded={openStep === i}
+            >
               <div className="dtt-step-n" style={{ background: s.color }}>{s.n}</div>
               <div className="dtt-step-inner">
                 <div className="dtt-step-title">{s.title}</div>
                 {openStep===i && <p className="dtt-step-body">{s.body}</p>}
               </div>
               <div className={`dtt-step-chev${openStep===i?' dtt-step-chev--open':''}`} style={{ color: s.color }}>›</div>
-            </div>
+            </button>
           ))}
         </div>
       </section>

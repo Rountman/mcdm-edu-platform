@@ -76,11 +76,13 @@ export default function SMARTTheory() {
         <h3 className="smtt-h3">5 kroků metody SMART <span className="smtt-h3-hint">— klikněte pro detail</span></h3>
         <div className="smtt-steps">
           {STEPS.map((s, i) => (
-            <div
+            <button
               key={s.n}
+              type="button"
               className={`smtt-step${openStep === i ? ' smtt-step--open' : ''}`}
               style={{ '--sc': s.color }}
               onClick={() => setOpenStep(openStep === i ? null : i)}
+              aria-expanded={openStep === i}
             >
               <div className="smtt-step-n" style={{ background: s.color }}>{s.n}</div>
               <div className="smtt-step-inner">
@@ -89,7 +91,7 @@ export default function SMARTTheory() {
               </div>
               <div className={`smtt-step-chevron${openStep === i ? ' smtt-step-chevron--open' : ''}`}
                 style={{ color: s.color }}>›</div>
-            </div>
+            </button>
           ))}
         </div>
       </section>

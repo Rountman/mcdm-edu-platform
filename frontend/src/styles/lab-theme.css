@@ -37,3 +37,106 @@
   border-bottom: 1px solid var(--lab-border);
   background: var(--lab-panel);
 }
+
+/* ── Semantic colour tokens ─────────────────────────────── */
+:root {
+  --lab-danger:  #FF3B5C;
+  --lab-success: #059669;
+  --lab-warning: #F59E0B;
+}
+
+/* ── Shared utility classes ─────────────────────────────── */
+
+/* Card */
+.u-card {
+  background: var(--lab-panel);
+  border: 1px solid var(--lab-border);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+
+/* Badge / tag */
+.u-badge {
+  display: inline-block;
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-accent);
+  background: rgba(0, 87, 255, 0.08);
+  border: 1px solid rgba(0, 87, 255, 0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-bottom: 10px;
+}
+
+/* Step tag row */
+.u-step-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.u-badge-n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--lab-accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+/* Toolbar button */
+.u-tbtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--lab-border);
+  background: var(--lab-bg);
+  color: var(--lab-text);
+  transition: border-color 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.u-tbtn:hover { border-color: var(--lab-accent); color: var(--lab-accent); }
+.u-tbtn--primary { background: var(--lab-accent); border-color: var(--lab-accent); color: #fff; }
+.u-tbtn--primary:hover { background: #0046d0; border-color: #0046d0; color: #fff; }
+
+/* Text input */
+.u-text-input {
+  background: var(--lab-bg);
+  border: 1px solid var(--lab-border);
+  border-radius: 7px;
+  color: var(--lab-text);
+  padding: 6px 9px;
+  font-size: 0.78rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+.u-text-input:focus { border-color: var(--lab-accent); }
+
+/* Field label */
+.u-field-label {
+  font-size: 0.58rem;
+  color: var(--lab-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  font-weight: 600;
+}

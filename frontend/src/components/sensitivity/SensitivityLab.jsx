@@ -4,6 +4,7 @@ import {
   Legend, ReferenceLine, ResponsiveContainer,
 } from 'recharts';
 import './SensitivityLab.css';
+import { downloadJson } from '../../utils/downloadJson';
 
 const SCHEMA_VERSION = '1';
 
@@ -67,7 +68,7 @@ export default function SensitivityLab() {
   const fileInputRef = useRef(null);
 
   const handleExport = () => {
-    const payload = {
+    downloadJson({
       version: SCHEMA_VERSION,
       method: 'SENSITIVITY',
       savedAt: new Date().toISOString(),
@@ -77,12 +78,7 @@ export default function SensitivityLab() {
       weights: weights.slice(0, nCrit),
       altNames: altNames.slice(0, nAlts),
       ratings: ratings.slice(0, nAlts).map(r => r.slice(0, nCrit)),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `sensitivity-${new Date().toISOString().slice(0,10)}.json`; a.click();
-    URL.revokeObjectURL(url);
+    }, `sensitivity-${new Date().toISOString().slice(0,10)}.json`);
   };
 
   const handleImportFile = (e) => {
@@ -167,11 +163,11 @@ export default function SensitivityLab() {
         <span className="snsl-toolbar-title">Analýza citlivosti</span>
         <div className="snsl-toolbar-actions">
           <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={handleImportFile} />
-          <button className="snsl-tbtn" onClick={() => fileInputRef.current?.click()}>
+          <button type="button" className="snsl-tbtn" onClick={() => fileInputRef.current?.click()}>
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
             Načíst data
           </button>
-          <button className="snsl-tbtn snsl-tbtn--primary" onClick={handleExport}>
+          <button type="button" className="snsl-tbtn snsl-tbtn--primary" onClick={handleExport}>
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
             Uložit data
           </button>
@@ -207,6 +203,7 @@ export default function SensitivityLab() {
               <input className="snsl-input" value={name}
                 onChange={e => { const n=[...critNames]; n[j]=e.target.value; setCritNames(n); }} />
               <button
+                type="button"
                 className={`snsl-type-btn${critTypes[j]==='cost'?' snsl-type-btn--cost':''}`}
                 onClick={() => setCritTypes(prev => prev.map((t,i) => i===j?(t==='benefit'?'cost':'benefit'):t))}>
                 {critTypes[j]==='benefit'?'Benefit':'Cost'}
@@ -262,7 +259,7 @@ export default function SensitivityLab() {
         <div className="snsl-focus-row">
           <span className="snsl-field-label" style={{ marginBottom: 0 }}>Analyzované kritérium:</span>
           {cNames.map((name, j) => (
-            <button key={j}
+            <button type="button" key={j}
               className={`snsl-focus-btn${focus===j?' snsl-focus-btn--active':''}`}
               onClick={() => setFocus(j)}>
               {name}

@@ -38,7 +38,7 @@
 
 /* Steps */
 .snst-steps { display: flex; flex-direction: column; gap: 6px; }
-.snst-step { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--lab-bg); border: 1px solid var(--lab-border); border-left: 3px solid var(--sc, var(--lab-border)); border-radius: 10px; cursor: pointer; transition: background 0.16s; user-select: none; }
+.snst-step { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--lab-bg); border: 1px solid var(--lab-border); border-left: 3px solid var(--sc, var(--lab-border)); border-radius: 10px; cursor: pointer; transition: background 0.16s; user-select: none; width: 100%; text-align: left; font-family: inherit; font-size: inherit; }
 .snst-step:hover { background: rgba(0,87,255,0.03); }
 .snst-step--open { background: rgba(0,87,255,0.03); border-color: var(--sc); }
 .snst-step-n { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; color: #fff; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }

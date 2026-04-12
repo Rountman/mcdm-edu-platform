@@ -275,6 +275,10 @@
   cursor: pointer;
   transition: background 0.16s, box-shadow 0.16s, border-color 0.16s;
   user-select: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .ahpt-step:hover {

@@ -246,7 +246,7 @@ export default function DecisionTreeLab() {
           <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--chance" />Náhodový ○</span>
           <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--term" />Terminální</span>
         </div>
-        <button className="dtl-btn dtl-btn--ghost" onClick={() => { setTree(INITIAL_TREE); deselect(); }}>↺ Reset</button>
+        <button type="button" className="dtl-btn dtl-btn--ghost" onClick={() => { setTree(INITIAL_TREE); deselect(); }}>↺ Reset</button>
       </div>
 
       {/* SVG tree with inline popovers */}
@@ -339,7 +339,7 @@ export default function DecisionTreeLab() {
                 <span className="dtl-popover-title">
                   {selNode.type === 'decision' ? 'Rozhodovací uzel' : selNode.type === 'chance' ? 'Náhodový uzel' : 'Terminální uzel'}
                 </span>
-                <button className="dtl-popover-close" onClick={deselect}>✕</button>
+                <button type="button" className="dtl-popover-close" onClick={deselect}>✕</button>
               </div>
 
               <div className="dtl-popover-field">
@@ -361,7 +361,7 @@ export default function DecisionTreeLab() {
               {!isRoot && (
                 <div className="dtl-popover-types">
                   {[['decision', '□', 'Rozh.'], ['chance', '○', 'Náhoda'], ['terminal', '◼', 'Terminál']].map(([t, icon, label]) => (
-                    <button key={t}
+                    <button type="button" key={t}
                       className={`dtl-chip dtl-chip--${t}${selNode.type === t ? ' dtl-chip--active' : ''}`}
                       onClick={() => convertType(sel, t)}>
                       {icon} {label}
@@ -372,10 +372,10 @@ export default function DecisionTreeLab() {
 
               <div className="dtl-popover-actions">
                 {selNode.type !== 'terminal' && (
-                  <button className="dtl-btn dtl-btn--primary dtl-btn--sm" onClick={() => addBranch(sel)}>+ Větev</button>
+                  <button type="button" className="dtl-btn dtl-btn--primary dtl-btn--sm" onClick={() => addBranch(sel)}>+ Větev</button>
                 )}
                 {!isRoot && (
-                  <button className="dtl-btn dtl-btn--danger dtl-btn--sm" onClick={() => delNode(sel)}>Odstranit</button>
+                  <button type="button" className="dtl-btn dtl-btn--danger dtl-btn--sm" onClick={() => delNode(sel)}>Odstranit</button>
                 )}
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function DecisionTreeLab() {
               >
                 <div className="dtl-popover-header">
                   <span className="dtl-popover-title">Hrana / větev</span>
-                  <button className="dtl-popover-close" onClick={deselect}>✕</button>
+                  <button type="button" className="dtl-popover-close" onClick={deselect}>✕</button>
                 </div>
 
                 <div className="dtl-popover-field">

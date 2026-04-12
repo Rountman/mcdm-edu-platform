@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './SMARTLab.css';
 import SMARTResults from './SMARTResults';
+import { downloadJson } from '../../utils/downloadJson';
 
 const MAX_CRIT = 7;
 const MAX_ALTS = 6;
@@ -65,20 +66,13 @@ export default function SMARTLab() {
   };
 
   const handleExport = () => {
-    const payload = {
+    downloadJson({
       version: SCHEMA_VERSION, method: 'SMART', savedAt: new Date().toISOString(),
       nCrit, nAlts,
       criteriaNames: cNames, criteriaTypes: critTypes.slice(0, nCrit),
       weights: wSlice, altNames: aNames,
       ratings: ratings.slice(0, nAlts).map(row => row.slice(0, nCrit)),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `smart-session-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    }, `smart-session-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
   const handleImportFile = (e) => {
@@ -112,11 +106,11 @@ export default function SMARTLab() {
       {/* Toolbar */}
       <div className="smrt-toolbar">
         <input ref={fileRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportFile} />
-        <button className="smrt-tbtn" onClick={() => fileRef.current?.click()}>
+        <button type="button" className="smrt-tbtn" onClick={() => fileRef.current?.click()}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
           Načíst data
         </button>
-        <button className="smrt-tbtn smrt-tbtn--primary" onClick={handleExport}>
+        <button type="button" className="smrt-tbtn smrt-tbtn--primary" onClick={handleExport}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
           Uložit data
         </button>
@@ -164,6 +158,7 @@ export default function SMARTLab() {
                 }}
               />
               <button
+                type="button"
                 className={`smrt-type-btn${critTypes[j] === 'cost' ? ' smrt-type-btn--cost' : ''}`}
                 onClick={() => { toggleType(j); setResults(null); }}
               >
@@ -238,7 +233,7 @@ export default function SMARTLab() {
       <div className="smrt-two-col">
         {/* Left – Calculate */}
         <div>
-          <button className="smrt-calc-btn" onClick={handleCalc} disabled={loading}>
+          <button type="button" className="smrt-calc-btn" onClick={handleCalc} disabled={loading}>
             {loading ? 'Počítám…' : 'Vypočítat skóre'}
           </button>
         </div>
