@@ -57,7 +57,7 @@ export default function PAPRIKALab() {
       const comps = pairs.map(({ i, j }) => ({
         i, j, winner: comparisons[`${i}-${j}`],
       }));
-      const res = await fetch('http://localhost:8000/api/calculate-paprika', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/calculate-paprika`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

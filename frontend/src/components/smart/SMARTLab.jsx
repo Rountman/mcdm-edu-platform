@@ -48,7 +48,7 @@ export default function SMARTLab() {
   const handleCalc = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/calculate-smart', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/calculate-smart`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
