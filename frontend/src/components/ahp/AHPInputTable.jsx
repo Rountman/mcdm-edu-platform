@@ -1,74 +1,134 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import './AHPInputTable.css';
 import AHPResults from './AHPResults';
-import SaatySlider from './SaatySlider';
-import { ACCENT, ACCENT2, MUTED, PANEL2, TEXT } from './ahp.constants';
+import AHPStepAlternatives from './AHPStepAlternatives';
+import AHPStepSetup from './AHPStepSetup';
+import PairwiseEditor from './PairwiseEditor';
+import { pairwiseConsistency } from './ahp.math';
+import {
+  altNamesOf,
+  buildPayload,
+  createInitialModel,
+  critNamesOf,
+  exportModel,
+  importModel,
+  setReciprocal,
+  validateModel,
+  withAltCount,
+  withCritCount,
+} from './ahp.model';
 import { downloadJson } from '../../utils/downloadJson';
 
-const SCHEMA_VERSION = '1';
-const DEFAULT_NAMES = Array.from({ length: 8 }, (_, i) => `K${i + 1}`);
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+
+const STEPS = [
+  'Kritéria a alternativy',
+  'Váhy kritérií',
+  'Hodnocení alternativ',
+  'Výsledky',
+];
+
+async function readApiError(res) {
+  try {
+    const body = await res.json();
+    if (typeof body.detail === 'string') return body.detail;
+    if (Array.isArray(body.detail)) return body.detail.map((d) => d.msg).join(' ');
+  } catch {
+    // tělo odpovědi není JSON
+  }
+  return `Server vrátil chybu ${res.status}.`;
+}
+
+function IssueList({ issues, onGoTo }) {
+  if (issues.length === 0) return null;
+  return (
+    <div className="ahp-warning" role="status">
+      <strong>Výpočet zatím nelze spustit:</strong>
+      <ul className="ahp-issue-list">
+        {issues.map((issue, k) => (
+          <li key={k}>
+            <button type="button" className="ahp-link-btn" onClick={() => onGoTo(issue.step, issue.criterion)}>
+              {issue.message}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function AHPInputTable() {
-  const [size, setSize] = useState(3);
-  const [criteriaNames, setCriteriaNames] = useState(DEFAULT_NAMES);
-  const [matrix, setMatrix] = useState([]);
+  const [model, setModel] = useState(createInitialModel);
+  const [step, setStep] = useState(0);
+  const [activeCrit, setActiveCrit] = useState(0);
   const [results, setResults] = useState(null);
+  const [apiError, setApiError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [importError, setImportError] = useState(null);
   const fileInputRef = useRef(null);
+  const revision = useRef(0);
 
-  useEffect(() => {
-    setMatrix(Array.from({ length: size }, () => Array.from({ length: size }, () => 1)));
+  const critNames = critNamesOf(model);
+  const altNames = altNamesOf(model);
+  const critIdx = Math.min(activeCrit, model.nCrit - 1);
+  const issues = useMemo(() => validateModel(model), [model]);
+  const invalidCriteria = useMemo(
+    () => new Set(issues.filter((i) => i.criterion !== undefined).map((i) => i.criterion)),
+    [issues],
+  );
+  const critLive = useMemo(() => pairwiseConsistency(model.critMatrix), [model.critMatrix]);
+  const altInconsistent = model.evals.some(
+    (ev) => ev.method === 'pairwise' && !pairwiseConsistency(ev.matrix).isConsistent,
+  );
+
+  // Každá změna vstupu jde tudy: zneplatní výsledky i rozpracovaný požadavek.
+  const update = (fn) => {
+    revision.current += 1;
+    setModel(fn);
     setResults(null);
-  }, [size]);
+    setApiError(null);
+  };
 
-  const comparisons = useMemo(() => {
-    const pairs = [];
-    for (let i = 0; i < size; i += 1) {
-      for (let j = i + 1; j < size; j += 1) pairs.push({ i, j });
-    }
-    return pairs;
-  }, [size]);
+  const setName = (key) => (i, value) => update((m) => ({
+    ...m,
+    [key]: m[key].map((n, k) => (k === i ? value : n)),
+  }));
 
-  if (matrix.length !== size) return null;
-
-  const handleUpdate = (i, j, value) => {
-    setMatrix((prev) => prev.map((row, rIdx) => (
-      row.map((cell, cIdx) => {
-        if (rIdx === i && cIdx === j) return value;
-        if (rIdx === j && cIdx === i) return 1 / value;
-        return cell;
-      })
-    )));
+  const goTo = (s, criterion) => {
+    setStep(s);
+    if (criterion !== undefined && criterion !== null) setActiveCrit(criterion);
   };
 
   const handleCalc = async () => {
+    const rev = revision.current;
     setLoading(true);
+    setApiError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/calculate-ahp`, {
+      const res = await fetch(`${API_URL}/api/calculate-ahp-full`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matrix }),
+        body: JSON.stringify(buildPayload(model)),
       });
-      setResults(await res.json());
-    } catch (err) {
-      console.error(err);
+      if (!res.ok) {
+        const msg = await readApiError(res);
+        if (rev === revision.current) setApiError(msg);
+        return;
+      }
+      const data = await res.json();
+      if (rev !== revision.current) return; // vstupy se mezitím změnily
+      setResults(data);
+      setStep(3);
+    } catch {
+      if (rev === revision.current) {
+        setApiError('Nepodařilo se spojit se serverem. Zkontrolujte, že backend běží, a zkuste to znovu.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleExport = () => {
-    const names = criteriaNames.slice(0, size);
-    downloadJson({
-      version: SCHEMA_VERSION,
-      method: 'AHP',
-      savedAt: new Date().toISOString(),
-      size,
-      criteriaNames: names,
-      matrix,
-      weights: results?.weights ?? null,
-    }, `ahp-session-${new Date().toISOString().slice(0, 10)}.json`);
+    downloadJson(exportModel(model, results), `ahp-session-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
   const handleImportFile = (e) => {
@@ -78,27 +138,39 @@ export default function AHPInputTable() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const data = JSON.parse(ev.target.result);
-        if (data.method !== 'AHP') throw new Error('Soubor není AHP session.');
-        if (!data.version) throw new Error('Chybí verze schématu.');
-        const { size: s, criteriaNames: names, matrix: mat } = data;
-        if (!Number.isInteger(s) || s < 2 || s > 8) throw new Error('Neplatný počet kritérií.');
-        if (!Array.isArray(names) || names.length !== s) throw new Error('Neplatná kritéria.');
-        if (!Array.isArray(mat) || mat.length !== s || mat.some(r => r.length !== s)) throw new Error('Neplatná matice.');
-        const restoredNames = names.concat(DEFAULT_NAMES.slice(names.length));
-        setCriteriaNames(restoredNames);
-        setSize(s);
-        setMatrix(mat);
-        setResults(null);
+        const next = importModel(JSON.parse(ev.target.result));
+        update(() => next);
+        setActiveCrit(0);
+        setStep(0);
         setImportError(null);
       } catch (err) {
-        setImportError(err.message);
+        setImportError(err instanceof SyntaxError ? 'Soubor není platný JSON.' : err.message);
       }
     };
     reader.readAsText(file);
   };
 
-  const names = criteriaNames.slice(0, size);
+  const stepWarn = [
+    issues.some((i) => i.step === 0),
+    !critLive.isConsistent,
+    invalidCriteria.size > 0 || altInconsistent,
+    false,
+  ];
+
+  const calcBlock = (
+    <div className="ahp-calc-block">
+      <IssueList issues={issues} onGoTo={goTo} />
+      {apiError && <div className="ahp-error" role="alert">{apiError}</div>}
+      <button
+        type="button"
+        className="ahp-calc-btn"
+        onClick={handleCalc}
+        disabled={loading || issues.length > 0}
+      >
+        {loading ? 'Počítám...' : 'Vypočítat výsledné pořadí'}
+      </button>
+    </div>
+  );
 
   return (
     <div className="ahp-root">
@@ -123,116 +195,96 @@ export default function AHPInputTable() {
         )}
       </div>
 
-      <div className="ahp-card">
-        <div className="ahp-step-tag">
-          <span className="ahp-step-badge">1</span>
-          Definice kritérií
-        </div>
-        <div className="ahp-config-row">
-          <div>
-            <div className="ahp-field-label">Počet kriterií</div>
-            <select className="ahp-select" value={size} onChange={(e) => setSize(Number(e.target.value))}>
-              {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-          </div>
-          <div className="ahp-name-grid">
-            {names.map((name, i) => (
-              <div key={i}>
-                <div className="ahp-field-label">Kritérium {i + 1}</div>
-                <input
-                  className="ahp-name-input"
-                  value={name}
-                  onChange={(e) => {
-                    const next = [...criteriaNames];
-                    next[i] = e.target.value;
-                    setCriteriaNames(next);
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+      <nav className="ahp-stepper" aria-label="Kroky AHP">
+        {STEPS.map((label, s) => (
+          <button
+            key={s}
+            type="button"
+            className={`ahp-stepper-btn${s === step ? ' ahp-stepper-btn--active' : ''}`}
+            aria-current={s === step ? 'step' : undefined}
+            onClick={() => setStep(s)}
+          >
+            <span className="ahp-step-badge">{s + 1}</span>
+            <span className="ahp-stepper-label">{label}</span>
+            {stepWarn[s] && <span className="ahp-stepper-warn" title="Vyžaduje pozornost">!</span>}
+            {s === 3 && results && <span className="ahp-stepper-ok" title="Spočteno">✓</span>}
+          </button>
+        ))}
+      </nav>
+
+      <div className="ahp-step-tag">
+        <span className="ahp-step-badge">{step + 1}</span>
+        {STEPS[step]}
       </div>
 
-      <div className="ahp-two-col">
-        <div>
-          <div className="ahp-step-tag">
-            <span className="ahp-step-badge">2</span>
-            Párové srovnání
-            <span style={{ marginLeft: 'auto', fontSize: '0.58rem' }}>{comparisons.length} dvojic</span>
-          </div>
-          <div className="ahp-comp-grid">
-            {comparisons.map(({ i, j }) => (
-              <div key={`${i}-${j}`} className="ahp-comp-card">
-                <SaatySlider
-                  value={matrix[i][j]}
-                  nameA={names[i]}
-                  nameB={names[j]}
-                  onChange={(v) => handleUpdate(i, j, v)}
-                />
-              </div>
-            ))}
-          </div>
-          <button type="button" className="ahp-calc-btn" onClick={handleCalc} disabled={loading}>
-            {loading ? 'Počítám...' : 'Vypočítat váhy'}
-          </button>
-        </div>
+      {step === 0 && (
+        <AHPStepSetup
+          critNames={critNames}
+          altNames={altNames}
+          onCritCount={(n) => update((m) => withCritCount(m, n))}
+          onAltCount={(n) => update((m) => withAltCount(m, n))}
+          onCritName={setName('critNames')}
+          onAltName={setName('altNames')}
+        />
+      )}
 
-        <div className="ahp-sticky-col">
-          <div className="ahp-step-tag">
-            <span className="ahp-step-badge">3</span>
-            Matice a výsledky
-          </div>
+      {step === 1 && (
+        <PairwiseEditor
+          names={critNames}
+          matrix={model.critMatrix}
+          priorityLabel="Váhy kritérií"
+          onChange={(i, j, v) => update((m) => ({ ...m, critMatrix: setReciprocal(m.critMatrix, i, j, v) }))}
+        />
+      )}
 
-          <div className="ahp-card ahp-matrix-wrap">
-            <div className="ahp-field-label" style={{ marginBottom: 10 }}>Srovnávací matice</div>
-            <table className="ahp-matrix-table">
-              <thead>
-                <tr>
-                  <th className="ahp-matrix-top-left" />
-                  {names.map((n, i) => (
-                    <th key={i} className="ahp-matrix-th">{n.slice(0, 7)}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {matrix.map((row, i) => (
-                  <tr key={i}>
-                    <td className="ahp-matrix-row-head">{names[i].slice(0, 7)}</td>
-                    {row.map((cell, j) => {
-                      const isDiag = i === j;
-                      const isHigh = cell > 3;
-                      return (
-                        <td
-                          key={j}
-                          className="ahp-matrix-cell"
-                          style={{
-                            background: isDiag ? PANEL2 : isHigh ? `${ACCENT}0D` : 'transparent',
-                            color: isDiag ? MUTED : cell > 1 ? ACCENT : cell < 1 ? ACCENT2 : TEXT,
-                            fontWeight: isDiag ? 400 : 600,
-                          }}
-                        >
-                          {isDiag ? '-' : cell < 1 ? `1/${Math.round(1 / cell)}` : Math.round(cell)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {step === 2 && (
+        <>
+          <AHPStepAlternatives
+            critNames={critNames}
+            altNames={altNames}
+            evals={model.evals}
+            critWeights={critLive.weights}
+            critIdx={critIdx}
+            setCritIdx={setActiveCrit}
+            invalidCriteria={invalidCriteria}
+            onEvalChange={(j, fn) => update((m) => ({
+              ...m,
+              evals: m.evals.map((ev, k) => (k === j ? fn(ev) : ev)),
+            }))}
+          />
+          {calcBlock}
+        </>
+      )}
 
-          {results ? (
-            <AHPResults results={results} criteriaNames={names} />
-          ) : (
+      {step === 3 && (
+        results ? (
+          <AHPResults
+            results={results}
+            critNames={critNames}
+            altNames={altNames}
+            evals={model.evals}
+            onGoTo={goTo}
+          />
+        ) : (
+          <>
             <div className="ahp-placeholder">
               <span className="ahp-placeholder-icon">[]</span>
-              Spusťte výpočet pro zobrazení vah
+              Spusťte výpočet pro zobrazení pořadí alternativ
             </div>
-          )}
-        </div>
+            {calcBlock}
+          </>
+        )
+      )}
+
+      <div className="ahp-step-nav">
+        <button type="button" className="ahp-toolbar-btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
+          ← Zpět
+        </button>
+        {step < STEPS.length - 1 && (
+          <button type="button" className="ahp-toolbar-btn ahp-toolbar-btn--primary" onClick={() => setStep(step + 1)}>
+            Další krok: {STEPS[step + 1]} →
+          </button>
+        )}
       </div>
     </div>
   );

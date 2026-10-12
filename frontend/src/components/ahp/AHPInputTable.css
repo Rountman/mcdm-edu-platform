@@ -157,7 +157,7 @@
 
 .ahp-comp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
   gap: 12px;
 }
 
@@ -413,5 +413,474 @@
 
   .ahp-sticky-col {
     position: static;
+  }
+}
+
+/* ── Kompletní model: stepper, hodnocení alternativ, výsledky ── */
+
+.ahp-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.ahp-stepper-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--lab-border);
+  border-radius: 10px;
+  background: var(--lab-panel);
+  color: var(--lab-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.ahp-stepper-btn .ahp-step-badge {
+  flex-shrink: 0;
+  background: var(--lab-muted);
+}
+
+.ahp-stepper-btn:hover {
+  border-color: var(--lab-accent);
+}
+
+.ahp-stepper-btn--active {
+  border-color: var(--lab-accent);
+  background: rgba(0, 87, 255, 0.06);
+  color: var(--lab-text);
+}
+
+.ahp-stepper-btn--active .ahp-step-badge {
+  background: var(--lab-accent);
+}
+
+.ahp-stepper-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ahp-stepper-warn,
+.ahp-stepper-ok {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.ahp-stepper-warn { color: var(--lab-danger); }
+.ahp-stepper-ok { color: var(--lab-success); }
+
+.ahp-step-nav,
+.ahp-crit-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.ahp-crit-nav {
+  margin-top: 0;
+}
+
+.ahp-toolbar-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.ahp-input--invalid,
+.ahp-name-input.ahp-input--invalid {
+  border-color: var(--lab-danger);
+  background: #FFF7F8;
+}
+
+.ahp-hint {
+  font-size: 0.7rem;
+  color: var(--lab-muted);
+  line-height: 1.5;
+  margin: 12px 0 0;
+}
+
+.ahp-cons-stats {
+  margin-top: 12px;
+  font-family: "DM Mono", monospace;
+  font-size: 0.68rem;
+  color: var(--lab-muted);
+}
+
+.ahp-cr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: 1px solid;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.ahp-cr-badge--compact {
+  margin-top: 0;
+  padding: 3px 8px;
+  font-size: 0.64rem;
+  white-space: nowrap;
+}
+
+/* Záložky kritérií v kroku 3 */
+.ahp-crit-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+}
+
+.ahp-crit-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 110px;
+  max-width: 170px;
+  padding: 8px 12px;
+  border: 1px solid var(--lab-border);
+  border-radius: 9px;
+  background: var(--lab-bg);
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ahp-crit-tab:hover {
+  border-color: var(--lab-accent);
+}
+
+.ahp-crit-tab--active {
+  border-color: var(--lab-accent);
+  background: rgba(0, 87, 255, 0.06);
+  box-shadow: inset 0 -2px 0 var(--lab-accent);
+}
+
+.ahp-crit-tab-name {
+  max-width: 100%;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--lab-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ahp-crit-tab-meta {
+  display: flex;
+  gap: 6px;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lab-muted);
+  font-weight: 600;
+}
+
+.ahp-crit-tab-dot {
+  font-weight: 800;
+}
+
+.ahp-eval-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.ahp-eval-title {
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ahp-eval-weight {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--lab-accent);
+}
+
+/* Segmentový přepínač (metoda, benefit/cost) */
+.ahp-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--lab-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--lab-bg);
+}
+
+.ahp-seg-btn {
+  padding: 7px 14px;
+  border: none;
+  border-right: 1px solid var(--lab-border);
+  background: transparent;
+  color: var(--lab-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ahp-seg-btn:last-child {
+  border-right: none;
+}
+
+.ahp-seg-btn--active {
+  background: var(--lab-accent);
+  color: #fff;
+}
+
+.ahp-smart-type {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+/* Datové tabulky */
+/* contain: šířka tabulky nesmí roztahovat flex layout aplikace na úzkých obrazovkách */
+.ahp-table-wrap,
+.ahp-matrix-wrap,
+.ahp-crit-tabs {
+  contain: inline-size;
+}
+
+.ahp-table-wrap {
+  overflow-x: auto;
+}
+
+.ahp-data-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.76rem;
+}
+
+.ahp-data-table th,
+.ahp-data-table td {
+  border: 1px solid var(--lab-border);
+  padding: 7px 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ahp-data-table th {
+  background: var(--lab-panel-2);
+  color: var(--lab-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ahp-data-table td {
+  background: var(--lab-bg);
+}
+
+.ahp-data-table--num th:not(:first-child),
+.ahp-data-table--num td:not(:first-child) {
+  text-align: right;
+  font-family: "DM Mono", monospace;
+  white-space: nowrap;
+}
+
+.ahp-data-table--num th:not(:first-child) {
+  font-family: inherit;
+}
+
+.ahp-td-name {
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ahp-th-sub {
+  font-size: 0.56rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.ahp-td-raw {
+  font-size: 0.64rem;
+  color: var(--lab-muted);
+}
+
+.ahp-td-main {
+  font-weight: 700;
+  color: var(--lab-text);
+}
+
+.ahp-tr-sum td {
+  background: var(--lab-panel);
+  color: var(--lab-muted);
+}
+
+.ahp-direct-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ahp-range {
+  flex: 1;
+  min-width: 80px;
+  accent-color: var(--lab-accent);
+}
+
+.ahp-num-input {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid var(--lab-border);
+  border-radius: 7px;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+  font-family: "DM Mono", monospace;
+  font-size: 0.78rem;
+  text-align: right;
+  outline: none;
+}
+
+.ahp-num-input--wide {
+  width: 100%;
+  max-width: 220px;
+}
+
+.ahp-num-input:focus {
+  border-color: var(--lab-accent);
+  box-shadow: 0 0 0 3px rgba(0, 87, 255, 0.1);
+}
+
+/* Výpočet, chyby, varování */
+.ahp-calc-block {
+  margin-top: 22px;
+}
+
+.ahp-calc-btn:disabled:hover {
+  opacity: 0.65;
+  transform: none;
+}
+
+.ahp-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #FFF0F3;
+  border: 1px solid rgba(255, 59, 92, 0.35);
+  color: var(--lab-danger);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.ahp-warning {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #FFFBEB;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #92400E;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.ahp-issue-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.ahp-warning-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.ahp-link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--lab-accent);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Výsledky */
+.ahp-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+.ahp-results-block {
+  margin-bottom: 22px;
+}
+
+.ahp-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--lab-muted);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.ahp-sticky-col .ahp-results-card {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .ahp-stepper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .ahp-card,
+  .ahp-results-card {
+    padding: 16px 14px;
+  }
+
+  .ahp-comp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ahp-results-grid {
+    grid-template-columns: 1fr;
   }
 }
