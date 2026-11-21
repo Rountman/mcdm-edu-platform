@@ -14,9 +14,8 @@ export const MIN_CRIT = 2;
 export const MAX_CRIT = 8;
 export const MIN_ALTS = 2;
 export const MAX_ALTS = 6;
-export const CR_THRESHOLD = 0.1;
-// Saatyho náhodné indexy (stejná tabulka jako backend / pyDecision)
-export const RANDOM_INDEX = [0, 0, 0, 0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49, 1.51, 1.48, 1.56, 1.57, 1.59];
+// Saatyho náhodné indexy a práh CR – jediný zdroj je výpočetní knihovna
+export { CR_THRESHOLD, RANDOM_INDEX } from '../../lib/mcdm/ahp';
 
 export const ALT_METHODS = [
   { id: 'pairwise', label: 'Párově', hint: 'Saatyho škála mezi alternativami' },

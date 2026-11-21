@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './SMARTLab.css';
 import SMARTResults from './SMARTResults';
 import { downloadJson } from '../../utils/downloadJson';
+import { calculateSmart, McdmError } from '../../lib/mcdm/api';
 
 const MAX_CRIT = 7;
 const MAX_ALTS = 6;
@@ -24,6 +25,7 @@ export default function SMARTLab() {
   const [results, setResults]       = useState(null);
   const [loading, setLoading]       = useState(false);
   const [importError, setImportError] = useState(null);
+  const [calcError, setCalcError]   = useState(null);
   const fileRef = useRef(null);
 
   // Reset results when inputs change
@@ -48,18 +50,16 @@ export default function SMARTLab() {
   const handleCalc = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/calculate-smart`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          weights: wSlice,
-          ratings: ratings.slice(0, nAlts).map(row => row.slice(0, nCrit)),
-          criteria_types: critTypes.slice(0, nCrit),
-        }),
-      });
-      setResults(await res.json());
+      setCalcError(null);
+      setResults(await calculateSmart({
+        weights: wSlice,
+        ratings: ratings.slice(0, nAlts).map(row => row.slice(0, nCrit)),
+        criteria_types: critTypes.slice(0, nCrit),
+      }));
     } catch (err) {
-      console.error(err);
+      setResults(null);
+      setCalcError(err instanceof McdmError ? err.detail : 'Výpočet se nezdařil.');
+      if (!(err instanceof McdmError)) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -236,6 +236,7 @@ export default function SMARTLab() {
           <button type="button" className="smrt-calc-btn" onClick={handleCalc} disabled={loading}>
             {loading ? 'Počítám…' : 'Vypočítat skóre'}
           </button>
+          {calcError && <p className="smrt-tbtn-error" role="alert">{calcError}</p>}
         </div>
 
         {/* Right – Results */}

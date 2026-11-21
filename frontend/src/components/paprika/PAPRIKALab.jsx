@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import './PAPRIKALab.css';
 import PAPRIKAResults from './PAPRIKAResults';
+import { calculatePaprika } from '../../lib/mcdm/api';
 
 const MAX_CRIT = 6;
 const MAX_ALTS = 5;
@@ -57,15 +58,10 @@ export default function PAPRIKALab() {
       const comps = pairs.map(({ i, j }) => ({
         i, j, winner: comparisons[`${i}-${j}`],
       }));
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/calculate-paprika`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ratings: ratings.slice(0, nAlts).map(row => row.slice(0, nCrit)),
-          comparisons: comps,
-        }),
-      });
-      setResults(await res.json());
+      setResults(await calculatePaprika({
+        ratings: ratings.slice(0, nAlts).map(row => row.slice(0, nCrit)),
+        comparisons: comps,
+      }));
     } catch (err) {
       console.error(err);
     } finally {

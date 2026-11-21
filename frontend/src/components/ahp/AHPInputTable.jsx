@@ -18,8 +18,7 @@ import {
   withCritCount,
 } from './ahp.model';
 import { downloadJson } from '../../utils/downloadJson';
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+import { calculateAhpFull, McdmError } from '../../lib/mcdm/api';
 
 const STEPS = [
   'Kritéria a alternativy',
@@ -27,17 +26,6 @@ const STEPS = [
   'Hodnocení alternativ',
   'Výsledky',
 ];
-
-async function readApiError(res) {
-  try {
-    const body = await res.json();
-    if (typeof body.detail === 'string') return body.detail;
-    if (Array.isArray(body.detail)) return body.detail.map((d) => d.msg).join(' ');
-  } catch {
-    // tělo odpovědi není JSON
-  }
-  return `Server vrátil chybu ${res.status}.`;
-}
 
 function IssueList({ issues, onGoTo }) {
   if (issues.length === 0) return null;
@@ -104,24 +92,15 @@ export default function AHPInputTable() {
     setLoading(true);
     setApiError(null);
     try {
-      const res = await fetch(`${API_URL}/api/calculate-ahp-full`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildPayload(model)),
-      });
-      if (!res.ok) {
-        const msg = await readApiError(res);
-        if (rev === revision.current) setApiError(msg);
-        return;
-      }
-      const data = await res.json();
+      const data = await calculateAhpFull(buildPayload(model));
       if (rev !== revision.current) return; // vstupy se mezitím změnily
       setResults(data);
       setStep(3);
-    } catch {
+    } catch (err) {
       if (rev === revision.current) {
-        setApiError('Nepodařilo se spojit se serverem. Zkontrolujte, že backend běží, a zkuste to znovu.');
+        setApiError(err instanceof McdmError ? err.detail : 'Výpočet se nezdařil kvůli neočekávané chybě.');
       }
+      if (!(err instanceof McdmError)) console.error(err);
     } finally {
       setLoading(false);
     }
