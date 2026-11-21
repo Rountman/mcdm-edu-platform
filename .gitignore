@@ -141,3 +141,6 @@ vite.config.ts.timestamp-*
 __pycache__/
 *.pyc
 .DS_Store
+
+# Build output (deploy přes GitHub Actions)
+frontend/dist/
