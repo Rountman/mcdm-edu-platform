@@ -90,9 +90,9 @@ chybových hlášek). Referenční data se generují skutečným voláním FastA
 
 ```powershell
 # z kořene repa, jednorázově
-py -3.12 -m venv backend\venv
-backend\venv\Scripts\python -m pip install -r backend\requirements.txt
-backend\venv\Scripts\python scripts\generate_fixtures.py
+& "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe" -m venv backend\venv   # Python 3.12 z winget
+.\backend\venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+.\backend\venv\Scripts\python.exe scripts\generate_fixtures.py
 ```
 
 Výsledek se uloží do `frontend/src/lib/mcdm/__fixtures__/backend.json` a commitne se do repa.
@@ -104,7 +104,7 @@ Složka `backend/` obsahuje původní FastAPI + NumPy + pyDecision backend. **Pr
 Zůstává v repu jako referenční implementace a zdroj fixtures pro testy. Lokálně se dá pořád spustit:
 
 ```powershell
-backend\venv\Scripts\activate
+.\backend\venv\Scripts\Activate.ps1
 cd backend
 uvicorn main:app --reload      # http://localhost:8000
 ```
