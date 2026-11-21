@@ -144,3 +144,7 @@ __pycache__/
 
 # Build output (deploy přes GitHub Actions)
 frontend/dist/
+
+# Python virtuální prostředí
+venv/
+.venv/

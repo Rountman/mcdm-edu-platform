@@ -1,7 +1,8 @@
-fastapi
+# Verze, se kterými byly vygenerovány fixtures (frontend/src/lib/mcdm/__fixtures__/backend.json)
+fastapi==0.165.0
 uvicorn
-pydantic>=2
-numpy
-pyDecision
+pydantic==2.14.4
+numpy==2.5.5
+pyDecision==5.1.8
 # TestClient pro scripts/generate_fixtures.py a backend/test_ahp_full.py
 httpx
