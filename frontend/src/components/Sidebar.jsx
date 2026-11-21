@@ -19,7 +19,7 @@ export const menuItems = [
   'Rozhodovací stromy',
 ];
 
-export default function Sidebar({ activeMenu, setActiveMenu, setActiveTab }) {
+export default function Sidebar({ activeMenu, setActiveMenu }) {
   return (
     <Drawer
       variant="permanent"
@@ -44,10 +44,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, setActiveTab }) {
           <ListItem key={text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               selected={activeMenu === index}
-              onClick={() => {
-                setActiveMenu(index);
-                setActiveTab(0);
-              }}
+              onClick={() => setActiveMenu(index)}
               sx={{
                 borderRadius: 2,
                 '&.Mui-selected': {

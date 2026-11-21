@@ -1,7 +1,11 @@
-import { useState } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
+import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
 import Sidebar from './components/Sidebar';
 import ModuleContent from './components/ModuleContent';
+
+// Pořadí odpovídá menuItems v Sidebar.jsx
+const MODULE_SLUGS = ['ahp', 'smart', 'paprika', 'citlivost', 'stromy'];
+const TAB_SLUGS = ['teorie', 'lab'];
 
 const theme = createTheme({
   palette: {
@@ -26,25 +30,33 @@ const theme = createTheme({
   },
 });
 
-function App() {
-  const [activeMenu, setActiveMenu] = useState(0);
-  const [activeTab, setActiveTab] = useState(0);
+function ModulePage() {
+  const { module, tab } = useParams();
+  const navigate = useNavigate();
+  const activeMenu = MODULE_SLUGS.indexOf(module);
+  const activeTab = TAB_SLUGS.indexOf(tab);
+  if (activeMenu < 0 || activeTab < 0) return <Navigate to="/ahp/teorie" replace />;
 
+  // Výběr modulu vždy otevře jeho teorii (stejně jako dřív)
+  const setActiveMenu = (i) => navigate(`/${MODULE_SLUGS[i]}/${TAB_SLUGS[0]}`);
+  const setActiveTab = (t) => navigate(`/${module}/${TAB_SLUGS[t]}`);
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+      <ModuleContent activeMenu={activeMenu} activeTab={activeTab} setActiveTab={setActiveTab} />
+    </Box>
+  );
+}
+
+function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
-        <Sidebar
-          activeMenu={activeMenu}
-          setActiveMenu={setActiveMenu}
-          setActiveTab={setActiveTab}
-        />
-        <ModuleContent
-          activeMenu={activeMenu}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      </Box>
+      <Routes>
+        <Route path="/:module/:tab" element={<ModulePage />} />
+        <Route path="*" element={<Navigate to="/ahp/teorie" replace />} />
+      </Routes>
     </ThemeProvider>
   );
 }
