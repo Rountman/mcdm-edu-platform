@@ -1,0 +1,23 @@
+// Hodnoty tokenů pro JS (MUI theme, inline styly). Zdroj pravdy je tokens.css – držet v souladu.
+export const tokens = {
+  primary: '#0057FF',
+  primaryHover: '#0046CC',
+  primarySubtle: '#E8F0FF',
+  secondary: '#6D28D9',
+  bg: '#F2F5FB',
+  surface: '#FFFFFF',
+  surface2: '#F5F7FA',
+  surface3: '#EEF1F6',
+  text: '#0D1526',
+  textMuted: '#4A5875',
+  border: '#DDE3ED',
+  borderStrong: '#7A869C',
+  barNeutral: '#8A94A6',
+  danger: '#C8102E',
+  dangerBg: '#FFF0F3',
+  success: '#047857',
+  successBg: '#ECFDF5',
+  warning: '#B45309',
+  fontSans: '"Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif',
+  radius: 14,
+};

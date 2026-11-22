@@ -26,7 +26,7 @@ export default function AHPStepSetup({ critNames, altNames, onCritCount, onAltCo
   return (
     <>
       <div className="ahp-card">
-        <div className="ahp-step-tag">Kritéria</div>
+        <h3 className="ahp-card-title">Kritéria</h3>
         <div className="ahp-config-row">
           <div>
             <label className="ahp-field-label" htmlFor="ahp-n-crit" style={{ display: 'block' }}>Počet kritérií</label>
@@ -44,7 +44,7 @@ export default function AHPStepSetup({ critNames, altNames, onCritCount, onAltCo
       </div>
 
       <div className="ahp-card">
-        <div className="ahp-step-tag">Alternativy</div>
+        <h3 className="ahp-card-title">Alternativy</h3>
         <div className="ahp-config-row">
           <div>
             <label className="ahp-field-label" htmlFor="ahp-n-alts" style={{ display: 'block' }}>Počet alternativ</label>

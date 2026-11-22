@@ -1,5 +1,5 @@
 import PairwiseEditor from './PairwiseEditor';
-import { ALT_METHODS, ACCENT2, METHOD_LABELS, SUCCESS } from './ahp.constants';
+import { ALT_METHODS, DANGER, METHOD_LABELS, SUCCESS } from './ahp.constants';
 import { pairwiseConsistency, parseNum } from './ahp.math';
 import { setReciprocal } from './ahp.model';
 
@@ -113,9 +113,9 @@ function SmartInput({ altNames, values, type, onChange, onType }) {
 }
 
 function critStatus(ev, invalid) {
-  if (invalid) return { color: ACCENT2, text: '!' };
-  if (ev.method === 'pairwise' && !pairwiseConsistency(ev.matrix).isConsistent) return { color: ACCENT2, text: 'CR' };
-  return { color: SUCCESS, text: 'OK' };
+  if (invalid) return { color: DANGER, text: '!', label: 'chybí nebo chybné údaje' };
+  if (ev.method === 'pairwise' && !pairwiseConsistency(ev.matrix).isConsistent) return { color: DANGER, text: 'CR', label: 'nekonzistentní' };
+  return { color: SUCCESS, text: 'OK', label: 'v pořádku' };
 }
 
 export default function AHPStepAlternatives({
@@ -145,7 +145,10 @@ export default function AHPStepAlternatives({
               <span className="ahp-crit-tab-name">{name}</span>
               <span className="ahp-crit-tab-meta">
                 {METHOD_LABELS[evals[j].method]}
-                <span className="ahp-crit-tab-dot" style={{ color: status.color }}>{status.text}</span>
+                <span className="ahp-crit-tab-dot" style={{ color: status.color }}>
+                  <span aria-hidden="true">{status.text}</span>
+                  <span className="u-visually-hidden">, {status.label}</span>
+                </span>
               </span>
             </button>
           );

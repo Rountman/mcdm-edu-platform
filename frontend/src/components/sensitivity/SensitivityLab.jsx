@@ -10,9 +10,26 @@ const SCHEMA_VERSION = '1';
 
 const MAX_CRIT = 6;
 const MAX_ALTS = 5;
-const ALT_COLORS = ['#0057FF', '#FF3B5C', '#059669', '#F59E0B', '#7C3AED', '#06B6D4'];
+const ALT_COLORS = ['#0057FF', '#6D28D9', '#047857', '#B45309', '#DB2777', '#0E7490'];
+const ALT_DASH = [undefined, '8 4', '2 3', '10 3 2 3', '4 4', '1 2'];
+const AXIS = { fontSize: 12, fill: '#4A5875' };
 const DEFAULT_CRIT = Array.from({ length: MAX_CRIT }, (_, i) => `K${i + 1}`);
 const DEFAULT_ALTS = Array.from({ length: MAX_ALTS }, (_, i) => `A${i + 1}`);
+
+// Výchozí ukázková data (jen počáteční vstup, výpočet se nemění): A1 vyniká v K1,
+// A3 v K2 a K3, A2 je mezi nimi. Při rovných vahách vede A3; při změně váhy K1 se pořadí
+// mění v ~27 % (A1/A2), ~47 % (A1/A3) a ~55 % (A2/A3). Hodnoty jsou zvolené tak, aby
+// žádné křížení nepadlo přesně na vzorkovací bod grafu (krok 2 %).
+const SAMPLE_RATINGS = [
+  [90, 30, 48],
+  [60, 62, 40],
+  [20, 85, 70],
+];
+function initialRatings() {
+  const r = Array.from({ length: MAX_ALTS }, () => Array(MAX_CRIT).fill(50));
+  SAMPLE_RATINGS.forEach((row, ai) => row.forEach((v, ci) => { r[ai][ci] = v; }));
+  return r;
+}
 
 // Normalise a column of ratings (benefit/cost)
 function normCol(col, type) {
@@ -60,9 +77,7 @@ export default function SensitivityLab() {
   const [critTypes, setCritTypes] = useState(Array(MAX_CRIT).fill('benefit'));
   const [weights, setWeights]     = useState(Array(MAX_CRIT).fill(50));
   const [altNames, setAltNames]   = useState(DEFAULT_ALTS);
-  const [ratings, setRatings]     = useState(() =>
-    Array.from({ length: MAX_ALTS }, () => Array(MAX_CRIT).fill(50))
-  );
+  const [ratings, setRatings]     = useState(initialRatings);
   const [focus, setFocus] = useState(0);
   const [importError, setImportError] = useState(null);
   const fileInputRef = useRef(null);
@@ -160,7 +175,6 @@ export default function SensitivityLab() {
 
       {/* ── TOOLBAR ────────────────────────────────────── */}
       <div className="snsl-toolbar">
-        <span className="snsl-toolbar-title">Analýza citlivosti</span>
         <div className="snsl-toolbar-actions">
           <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={handleImportFile} />
           <button type="button" className="snsl-tbtn" onClick={() => fileInputRef.current?.click()}>
@@ -172,24 +186,24 @@ export default function SensitivityLab() {
             Uložit data
           </button>
         </div>
-        {importError && <span className="snsl-toolbar-err">{importError}</span>}
+        {importError && <span className="snsl-toolbar-err" role="alert">{importError}</span>}
       </div>
 
       {/* ── DATA INPUT ─────────────────────────────────── */}
-      <div className="snsl-card">
-        <div className="snsl-step-tag"><span className="snsl-badge-n">1</span>Data — kritéria a hodnocení</div>
+      <section className="snsl-card" aria-labelledby="snsl-step1">
+        <h2 className="snsl-step-tag" id="snsl-step1"><span className="snsl-badge-n" aria-hidden="true">1</span>Kritéria a hodnocení</h2>
 
         <div className="snsl-config-row">
           <div>
-            <div className="snsl-field-label">Počet kritérií</div>
-            <select className="snsl-select" value={nCrit}
+            <label className="snsl-field-label" htmlFor="snsl-n-crit">Počet kritérií</label>
+            <select id="snsl-n-crit" className="snsl-select" value={nCrit}
               onChange={e => { setNCrit(Number(e.target.value)); setFocus(0); }}>
               {[2,3,4,5,6].map(n => <option key={n}>{n}</option>)}
             </select>
           </div>
           <div>
-            <div className="snsl-field-label">Počet alternativ</div>
-            <select className="snsl-select" value={nAlts} onChange={e => setNAlts(Number(e.target.value))}>
+            <label className="snsl-field-label" htmlFor="snsl-n-alts">Počet alternativ</label>
+            <select id="snsl-n-alts" className="snsl-select" value={nAlts} onChange={e => setNAlts(Number(e.target.value))}>
               {[2,3,4,5].map(n => <option key={n}>{n}</option>)}
             </select>
           </div>
@@ -197,18 +211,20 @@ export default function SensitivityLab() {
 
         {/* Criteria row */}
         <div className="snsl-crit-grid">
-          <div className="snsl-crit-header"><span>Název</span><span>Typ</span><span>Váha</span><span className="snsl-right">%</span></div>
+          <div className="snsl-crit-header" aria-hidden="true"><span>Název kritéria</span><span>Typ</span><span>Váha</span><span className="snsl-right">Podíl</span></div>
           {cNames.map((name, j) => (
             <div key={j} className="snsl-crit-row">
-              <input className="snsl-input" value={name}
+              <input className="snsl-input" value={name} aria-label={`Název kritéria ${j + 1}`}
                 onChange={e => { const n=[...critNames]; n[j]=e.target.value; setCritNames(n); }} />
               <button
                 type="button"
                 className={`snsl-type-btn${critTypes[j]==='cost'?' snsl-type-btn--cost':''}`}
+                aria-label={`Typ kritéria ${name}: ${critTypes[j]==='benefit'?'benefit, více je lépe':'cost, méně je lépe'}. Kliknutím přepnete.`}
                 onClick={() => setCritTypes(prev => prev.map((t,i) => i===j?(t==='benefit'?'cost':'benefit'):t))}>
-                {critTypes[j]==='benefit'?'Benefit':'Cost'}
+                <span aria-hidden="true">{critTypes[j]==='benefit'?'↑ Benefit':'↓ Cost'}</span>
               </button>
               <input type="range" min={0} max={100} className="snsl-slider" value={weights[j]}
+                aria-label={`Váha kritéria ${name}`} aria-valuetext={`${weights[j]} bodů, podíl ${Math.round(normW[j]*100)} %`}
                 onChange={e => setWeights(prev => prev.map((w,i) => i===j?Number(e.target.value):w))} />
               <span className="snsl-right snsl-w-pct">{Math.round(normW[j]*100)} %</span>
             </div>
@@ -216,14 +232,14 @@ export default function SensitivityLab() {
         </div>
 
         {/* Ratings table */}
-        <div className="snsl-table-wrap" style={{ marginTop: 18 }}>
+        <div className="snsl-table-wrap">
           <table className="snsl-table">
             <thead>
               <tr>
-                <th className="snsl-th-empty" />
+                <th scope="col" className="snsl-th-empty">Alternativa</th>
                 {cNames.map((cn, j) => (
-                  <th key={j} className="snsl-th">
-                    {cn}<br/><span className="snsl-th-type">{critTypes[j]==='benefit'?'↑':'↓'}</span>
+                  <th key={j} scope="col" className="snsl-th">
+                    {cn}<br/><span className="snsl-th-type">{critTypes[j]==='benefit'?'↑ benefit':'↓ cost'}</span>
                   </th>
                 ))}
               </tr>
@@ -232,12 +248,13 @@ export default function SensitivityLab() {
               {aNames.map((an, ai) => (
                 <tr key={ai}>
                   <td className="snsl-td-alt">
-                    <input className="snsl-input snsl-input--sm" value={an}
+                    <input className="snsl-input" value={an} aria-label={`Název alternativy ${ai + 1}`}
                       onChange={e => { const n=[...altNames]; n[ai]=e.target.value; setAltNames(n); }} />
                   </td>
-                  {cNames.map((_, j) => (
+                  {cNames.map((cn, j) => (
                     <td key={j} className="snsl-td">
                       <input type="number" min={0} max={100} className="snsl-num"
+                        aria-label={`Hodnocení ${an} podle ${cn}`}
                         value={ratings[ai][j]}
                         onChange={e => setRatings(prev =>
                           prev.map((row, r) => r===ai ? row.map((c,ci) => ci===j?Number(e.target.value):c) : row)
@@ -249,51 +266,58 @@ export default function SensitivityLab() {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
       {/* ── CHART ──────────────────────────────────────── */}
-      <div className="snsl-card">
-        <div className="snsl-step-tag"><span className="snsl-badge-n">2</span>Graf citlivosti</div>
+      <section className="snsl-card" aria-labelledby="snsl-step2">
+        <h2 className="snsl-step-tag" id="snsl-step2"><span className="snsl-badge-n" aria-hidden="true">2</span>Graf citlivosti</h2>
 
         {/* Criterion selector */}
-        <div className="snsl-focus-row">
-          <span className="snsl-field-label" style={{ marginBottom: 0 }}>Analyzované kritérium:</span>
+        <div className="snsl-focus-row" role="group" aria-labelledby="snsl-focus-label">
+          <span className="snsl-field-label" id="snsl-focus-label" style={{ marginBottom: 0 }}>Analyzované kritérium:</span>
           {cNames.map((name, j) => (
             <button type="button" key={j}
               className={`snsl-focus-btn${focus===j?' snsl-focus-btn--active':''}`}
+              aria-pressed={focus===j}
               onClick={() => setFocus(j)}>
               {name}
             </button>
           ))}
         </div>
 
-        <ResponsiveContainer width="100%" height={280}>
+        <div role="img" aria-label={`Spojnicový graf: celkové skóre alternativ v závislosti na váze kritéria ${cNames[focus]} od 0 do 100 %. Shrnutí je v části Interpretace.`}>
+        <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F6" />
-            <XAxis dataKey="pct" unit="%" tick={{ fontSize: 11, fill: '#8896AE' }}
-              label={{ value: `Váha: ${cNames[focus]}`, position: 'insideBottom', offset: -2, fontSize: 11, fill: '#8896AE' }} />
-            <YAxis unit="%" domain={[0, 100]} tick={{ fontSize: 11, fill: '#8896AE' }} width={38} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#DDE3ED" />
+            {/* Číselná osa: svislé čáry (aktuální váha, přechodové body) leží i mimo vzorky po 2 % */}
+            <XAxis dataKey="pct" type="number" domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+              unit="%" tick={AXIS}
+              label={{ value: `Váha: ${cNames[focus]}`, position: 'insideBottom', offset: -2, ...AXIS }} />
+            <YAxis unit="%" domain={[0, 100]} tick={AXIS} width={44} />
             <Tooltip
               formatter={(v, name) => [`${v.toFixed(1)} %`, name]}
-              contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #DDE3ED' }} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <ReferenceLine x={currentPct} stroke="#8896AE" strokeDasharray="5 4"
-              label={{ value: 'Aktuální', position: 'insideTopLeft', fontSize: 10, fill: '#8896AE' }} />
+              contentStyle={{ fontSize: 14, borderRadius: 8, border: '1px solid #7A869C' }} />
+            <Legend wrapperStyle={{ fontSize: 14 }} />
+            <ReferenceLine x={currentPct} stroke="#4A5875" strokeDasharray="5 4"
+              label={{ value: 'Aktuální', position: 'insideTopLeft', ...AXIS }} />
             {crossovers.map((co, i) => (
-              <ReferenceLine key={i} x={co.pct} stroke="#F59E0B" strokeDasharray="3 3" strokeWidth={1.5} />
+              <ReferenceLine key={i} x={co.pct} stroke="#B45309" strokeDasharray="3 3" strokeWidth={1.5} />
             ))}
             {aNames.map((name, ai) => (
               <Line key={ai} type="monotone" dataKey={`a${ai}`} name={name}
-                stroke={ALT_COLORS[ai]} strokeWidth={2.5} dot={false}
+                stroke={ALT_COLORS[ai]} strokeDasharray={ALT_DASH[ai]} strokeWidth={2.5} dot={false}
+                isAnimationActive={false}
                 activeDot={{ r: 4 }} />
             ))}
           </LineChart>
         </ResponsiveContainer>
-      </div>
+        </div>
+        <p className="snsl-chart-note">Čáry se liší barvou i vzorem. Svislá přerušovaná čára = aktuální váha, oranžové čáry = přechodové body.</p>
+      </section>
 
       {/* ── INSIGHTS ───────────────────────────────────── */}
-      <div className="snsl-card">
-        <div className="snsl-step-tag"><span className="snsl-badge-n">3</span>Interpretace</div>
+      <section className="snsl-card" aria-labelledby="snsl-step3" aria-live="polite">
+        <h2 className="snsl-step-tag" id="snsl-step3"><span className="snsl-badge-n" aria-hidden="true">3</span>Interpretace</h2>
         <div className="snsl-insights">
           <div className="snsl-insight-item">
             <span className="snsl-insight-label">Aktuální váha {cNames[focus]}</span>
@@ -315,7 +339,7 @@ export default function SensitivityLab() {
             ))
           )}
         </div>
-      </div>
+      </section>
 
     </div>
   );

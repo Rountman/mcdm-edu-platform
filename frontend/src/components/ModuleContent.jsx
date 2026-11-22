@@ -1,6 +1,6 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Box, Typography, Paper, Tabs, Tab } from '@mui/material';
-import { menuItems } from './Sidebar';
+import { MODULES, TAB_LABELS } from './modules';
 
 const AHPInputTable      = lazy(() => import('./ahp/AHPInputTable'));
 const AHPTheory          = lazy(() => import('./ahp/AHPTheory'));
@@ -19,28 +19,63 @@ const LAB_COMPONENTS    = [AHPInputTable, SMARTLab, PAPRIKALab, SensitivityLab, 
 export default function ModuleContent({ activeMenu, activeTab, setActiveTab }) {
   const TheoryComponent = THEORY_COMPONENTS[activeMenu] ?? null;
   const LabComponent    = LAB_COMPONENTS[activeMenu] ?? null;
+  const headingRef = useRef(null);
+  const prevMenu = useRef(activeMenu);
+
+  // Po přepnutí modulu přesunout focus na nadpis (čtečky ohlásí novou stránku).
+  // Porovnání s předchozí hodnotou funguje i při dvojím spuštění efektu ve StrictMode.
+  useEffect(() => {
+    if (prevMenu.current === activeMenu) return;
+    prevMenu.current = activeMenu;
+    headingRef.current?.focus();
+  }, [activeMenu]);
+
+  useEffect(() => {
+    document.title = `${MODULES[activeMenu].label} – ${TAB_LABELS[activeTab]} | MCDM Edu`;
+  }, [activeMenu, activeTab]);
 
   return (
-    <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column' }}>
-      <Box className="lab-shell" sx={{ mb: 3 }}>
-        <Typography className="lab-title" component="h1">
-          {menuItems[activeMenu]}
-        </Typography>
-        <Typography className="lab-subtitle" component="p">
-          Vyberte záložku teorie nebo lab.
+    <Box
+      component="main"
+      id="main-content"
+      tabIndex={-1}
+      sx={{
+        flexGrow: 1,
+        minWidth: 0,
+        p: { xs: 2, sm: 3, md: 4 },
+        display: 'flex',
+        flexDirection: 'column',
+        '&:focus': { outline: 'none' },
+      }}
+    >
+      <Box className="lab-shell" sx={{ mb: { xs: 2, md: 3 } }}>
+        <Typography ref={headingRef} tabIndex={-1} className="lab-title" component="h1" sx={{ '&:focus': { outline: 'none' } }}>
+          {MODULES[activeMenu].label}
         </Typography>
       </Box>
 
-      <Paper elevation={0} className="lab-shell lab-panel" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Paper elevation={0} className="lab-shell lab-panel" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Box className="lab-tabs">
-          <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} centered>
-            <Tab label="Teorie a princip" />
-            <Tab label="Lab (Výpočet)" />
+          <Tabs
+            value={activeTab}
+            onChange={(_, newValue) => setActiveTab(newValue)}
+            aria-label="Část modulu"
+            variant="fullWidth"
+            sx={{ maxWidth: 480 }}
+          >
+            {TAB_LABELS.map((label, i) => (
+              <Tab key={label} label={label} id={`module-tab-${i}`} aria-controls="module-tabpanel" />
+            ))}
           </Tabs>
         </Box>
 
-        <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
-          <Suspense fallback={<Box sx={{ p: 3, color: 'text.secondary', fontSize: '0.875rem' }}>Načítání…</Box>}>
+        <Box
+          id="module-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`module-tab-${activeTab}`}
+          sx={{ p: { xs: 2, md: 3 }, minWidth: 0 }}
+        >
+          <Suspense fallback={<Box role="status" sx={{ p: 3, color: 'text.secondary' }}>Načítání…</Box>}>
             {activeTab === 0 && (
               TheoryComponent
                 ? <TheoryComponent />

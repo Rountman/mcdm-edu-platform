@@ -1,36 +1,49 @@
+import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
 import Sidebar from './components/Sidebar';
 import ModuleContent from './components/ModuleContent';
+import { MODULES, TAB_SLUGS } from './components/modules';
+import { tokens } from './styles/tokens';
 
-// Pořadí odpovídá menuItems v Sidebar.jsx
-const MODULE_SLUGS = ['ahp', 'smart', 'paprika', 'citlivost', 'stromy'];
-const TAB_SLUGS = ['teorie', 'lab'];
+const MODULE_SLUGS = MODULES.map((m) => m.slug);
+const TEXT_SIZE_KEY = 'mcdm-text-size';
 
 const theme = createTheme({
   palette: {
     mode: 'light',
-    primary: { main: '#0057FF' },
-    secondary: { main: '#FF3B5C' },
-    background: { default: '#f2f5fb', paper: '#ffffff' },
-    text: {
-      primary: '#0D1526',
-      secondary: '#5c6f91',
-    },
+    primary: { main: tokens.primary, dark: tokens.primaryHover },
+    secondary: { main: tokens.secondary },
+    error: { main: tokens.danger },
+    success: { main: tokens.success },
+    background: { default: tokens.bg, paper: tokens.surface },
+    text: { primary: tokens.text, secondary: tokens.textMuted },
+    divider: tokens.border,
   },
-  shape: {
-    borderRadius: 14,
-  },
+  shape: { borderRadius: tokens.radius },
   typography: {
-    fontFamily: '"Plus Jakarta Sans", "Segoe UI", sans-serif',
-    h4: {
-      fontWeight: 700,
-      letterSpacing: '-0.02em',
+    fontFamily: tokens.fontSans,
+    button: { textTransform: 'none', fontWeight: 600 },
+    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
+  },
+  components: {
+    MuiTab: {
+      styleOverrides: {
+        root: { fontSize: '1rem', minHeight: 52 },
+      },
     },
   },
 });
 
-function ModulePage() {
+function readTextSize() {
+  try {
+    return localStorage.getItem(TEXT_SIZE_KEY) === 'large';
+  } catch {
+    return false;
+  }
+}
+
+function ModulePage({ largeText, onToggleLargeText }) {
   const { module, tab } = useParams();
   const navigate = useNavigate();
   const activeMenu = MODULE_SLUGS.indexOf(module);
@@ -42,19 +55,45 @@ function ModulePage() {
   const setActiveTab = (t) => navigate(`/${module}/${TAB_SLUGS[t]}`);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
-      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, minHeight: '100dvh', bgcolor: 'background.default' }}>
+      <a className="skip-link" href="#main-content" onClick={(e) => {
+        // HashRouter: kotvu řešíme ručně, aby se nezměnila trasa
+        e.preventDefault();
+        document.getElementById('main-content')?.focus();
+      }}
+      >
+        Přeskočit na obsah
+      </a>
+      <Sidebar
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        largeText={largeText}
+        onToggleLargeText={onToggleLargeText}
+      />
       <ModuleContent activeMenu={activeMenu} activeTab={activeTab} setActiveTab={setActiveTab} />
     </Box>
   );
 }
 
 function App() {
+  const [largeText, setLargeText] = useState(readTextSize);
+
+  useEffect(() => {
+    document.documentElement.dataset.textSize = largeText ? 'large' : 'normal';
+    try {
+      localStorage.setItem(TEXT_SIZE_KEY, largeText ? 'large' : 'normal');
+    } catch {
+      // úložiště nemusí být dostupné (soukromé okno) – volba pak platí jen do obnovení
+    }
+  }, [largeText]);
+
+  const page = <ModulePage largeText={largeText} onToggleLargeText={() => setLargeText((v) => !v)} />;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Routes>
-        <Route path="/:module/:tab" element={<ModulePage />} />
+        <Route path="/:module/:tab" element={page} />
         <Route path="*" element={<Navigate to="/ahp/teorie" replace />} />
       </Routes>
     </ThemeProvider>

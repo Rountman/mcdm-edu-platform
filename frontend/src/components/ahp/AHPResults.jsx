@@ -1,9 +1,12 @@
 import ConsistencyBadge from './ConsistencyBadge';
-import { ACCENT, ACCENT2, METHOD_LABELS, SUCCESS } from './ahp.constants';
+import { ACCENT, BAR_NEUTRAL, DANGER, METHOD_LABELS, SUCCESS, TEXT } from './ahp.constants';
 import { fmt, parseNum } from './ahp.math';
+import { tiedAtTop, tieNote } from '../../utils/ranking';
 
 function WeightBars({ items }) {
   const max = Math.max(...items.map((it) => it.value));
+  // Zvýraznit jen jednoznačné první místo (položky jsou seřazené sestupně)
+  const uniqueTop = tiedAtTop(items.map((it) => it.value)) === 1;
   return items.map(({ name, value, prefix }, i) => (
     <div key={i} className="ahp-weight-row">
       {prefix}
@@ -13,14 +16,11 @@ function WeightBars({ items }) {
           className="ahp-weight-bar"
           style={{
             width: `${max > 0 ? (value / max) * 100 : 0}%`,
-            background: i === 0
-              ? `linear-gradient(90deg, ${ACCENT}, #60A5FA)`
-              : `linear-gradient(90deg, ${ACCENT2}, #FB923C)`,
-            opacity: i === 0 ? 1 : 0.7,
+            background: i === 0 && uniqueTop ? ACCENT : BAR_NEUTRAL,
           }}
         />
       </div>
-      <span className="ahp-weight-pct" style={{ color: i === 0 ? ACCENT : ACCENT2 }}>
+      <span className="ahp-weight-pct" style={{ color: i === 0 && uniqueTop ? ACCENT : TEXT }}>
         {(value * 100).toFixed(1)}%
       </span>
     </div>
@@ -64,7 +64,7 @@ function ConsistencyOverview({ results, critNames, onGoTo }) {
 
   return (
     <div className="ahp-results-card ahp-results-block">
-      <div className="ahp-field-label ahp-results-title">Konzistence párových matic</div>
+      <h3 className="ahp-card-title">Konzistence párových matic</h3>
       {bad.length > 0 && (
         <div className="ahp-warning" role="alert">
           <strong>Pozor:</strong> {bad.length === 1 ? 'jedna matice je nekonzistentní' : `${bad.length} matice jsou nekonzistentní`} (CR ≥ 0,1).
@@ -103,7 +103,7 @@ function ConsistencyOverview({ results, critNames, onGoTo }) {
                 <td>{fmt(r.c.lambda_max)}</td>
                 <td>{fmt(r.c.ci)}</td>
                 <td>{fmt(r.c.ri, 2)}</td>
-                <td style={{ color: r.c.is_consistent ? SUCCESS : ACCENT2, fontWeight: 700 }}>{fmt(r.c.cr)}</td>
+                <td style={{ color: r.c.is_consistent ? SUCCESS : DANGER, fontWeight: 700 }}>{fmt(r.c.cr)}</td>
                 <td>
                   <ConsistencyBadge cr={r.c.cr} isConsistent={r.c.is_consistent} n={r.n} compact />
                 </td>
@@ -123,24 +123,28 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
   const weights = results.criteria.weights;
   const ranking = results.ranking;
   const scores = results.global_scores;
+  const sortedScores = ranking.map((i) => scores[i]);
+  const uniqueWinner = tiedAtTop(sortedScores) === 1;
+  const tie = tieNote(sortedScores);
 
   return (
     <div className="ahp-results">
       <div className="ahp-results-grid">
         <div className="ahp-results-card">
-          <div className="ahp-field-label ahp-results-title">Výsledné pořadí alternativ</div>
+          <h3 className="ahp-card-title">Výsledné pořadí alternativ</h3>
           <WeightBars
             items={ranking.map((i, r) => ({
               name: altNames[i],
               value: scores[i],
-              prefix: <span className="ahp-rank-badge" style={{ background: r === 0 ? ACCENT : undefined }}>{r + 1}.</span>,
+              prefix: <span className="ahp-rank-badge" style={{ background: r === 0 && uniqueWinner ? ACCENT : undefined }}>{r + 1}.</span>,
             }))}
           />
+          {tie && <p className="u-alert u-alert--warning" style={{ marginTop: 12 }}>{tie}</p>}
           <p className="ahp-hint">Globální skóre = Σ váha kritéria × normalizovaná lokální priorita; součet skóre = 100 %.</p>
         </div>
 
         <div className="ahp-results-card">
-          <div className="ahp-field-label ahp-results-title">Váhy kritérií</div>
+          <h3 className="ahp-card-title">Váhy kritérií</h3>
           <WeightBars items={sortedDesc(critNames, weights)} />
           <ConsistencyBadge
             cr={results.criteria.consistency.cr}
@@ -151,7 +155,7 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
       </div>
 
       <div className="ahp-results-card ahp-results-block">
-        <div className="ahp-field-label ahp-results-title">Lokální priority alternativ</div>
+        <h3 className="ahp-card-title">Lokální priority alternativ</h3>
         <p className="ahp-hint" style={{ marginTop: 0 }}>
           Každý sloupec se před syntézou normalizuje na součet 1. U metod Přímo a SMART je vidět hodnota před
           normalizací (body, resp. skutečná hodnota → hodnotová funkce v) a výsledná priorita.
@@ -199,7 +203,7 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
       </div>
 
       <div className="ahp-results-card ahp-results-block">
-        <div className="ahp-field-label ahp-results-title">Vážené příspěvky (váha × lokální priorita)</div>
+        <h3 className="ahp-card-title">Vážené příspěvky (váha × lokální priorita)</h3>
         <div className="ahp-table-wrap">
           <table className="ahp-data-table ahp-data-table--num">
             <thead>

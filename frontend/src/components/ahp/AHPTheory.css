@@ -8,7 +8,7 @@
   flex-direction: column;
   gap: 18px;
   padding-bottom: 40px;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* CARD BASE */
@@ -53,10 +53,9 @@
 /* ── Badge ──────────────────────────────────────────────────── */
 .ahpt-badge {
   display: inline-block;
-  font-size: 0.57rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--lab-accent);
   background: rgba(0, 87, 255, 0.08);
   border: 1px solid rgba(0, 87, 255, 0.2);
@@ -67,7 +66,7 @@
 
 /* ── Headings ───────────────────────────────────────────────── */
 .ahpt-h2 {
-  font-size: 1.4rem;
+  font-size: var(--fs-xl);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--lab-text);
@@ -80,14 +79,14 @@
 }
 
 .ahpt-h3 {
-  font-size: 1rem;
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--lab-text);
   margin: 0 0 16px;
 }
 
 .ahpt-h3-hint {
-  font-size: 0.64rem;
+  font-size: var(--fs-xs);
   font-weight: 400;
   color: var(--lab-muted);
   font-style: italic;
@@ -95,7 +94,7 @@
 
 /* ── Lead paragraph ─────────────────────────────────────────── */
 .ahpt-lead {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   line-height: 1.65;
   color: var(--lab-text);
   margin: 0 0 18px;
@@ -126,17 +125,16 @@
 }
 
 .ahpt-stat-val {
-  font-size: 1rem;
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--lab-accent);
   font-family: "DM Mono", monospace;
 }
 
 .ahpt-stat-lbl {
-  font-size: 0.56rem;
+  font-size: var(--fs-xs);
   color: var(--lab-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.01em;
   margin-top: 3px;
   text-align: center;
   font-weight: 600;
@@ -223,34 +221,34 @@
   fill: #fff;
   font-size: 13px;
   font-weight: 700;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .ahpt-svgt--crit {
   fill: var(--lab-accent);
   font-size: 11px;
   font-weight: 600;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .ahpt-svgt--alt {
   fill: var(--lab-muted);
   font-size: 10.5px;
   font-weight: 600;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .ahpt-svgt--level {
   fill: var(--lab-muted);
   font-size: 8.5px;
   font-weight: 600;
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-  letter-spacing: 0.06em;
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
 }
 
 /* ── Caption / note ─────────────────────────────────────────── */
 .ahpt-caption {
-  font-size: 0.74rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
   line-height: 1.55;
   margin: 0;
@@ -300,7 +298,7 @@
   height: 26px;
   border-radius: 6px;
   color: #fff;
-  font-size: 0.72rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -310,7 +308,7 @@
 }
 
 .ahpt-step-title {
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--lab-text);
 }
@@ -321,7 +319,7 @@
 }
 
 .ahpt-step-body {
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
   line-height: 1.6;
   margin: 6px 0 0;
@@ -329,7 +327,7 @@
 }
 
 .ahpt-step-chevron {
-  font-size: 1.2rem;
+  font-size: var(--fs-lg);
   font-weight: 300;
   transition: transform 0.2s ease;
   flex-shrink: 0;
@@ -374,14 +372,14 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   font-family: "DM Mono", monospace;
   flex-shrink: 0;
 }
 
 .ahpt-saaty-lbl {
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
   color: var(--lab-text);
   font-weight: 500;
 }
@@ -412,7 +410,7 @@
   transform: translateX(-50%);
   background: var(--lab-text);
   color: #fff;
-  font-size: 0.65rem;
+  font-size: var(--fs-xs);
   padding: 5px 10px;
   border-radius: 6px;
   white-space: nowrap;
@@ -432,7 +430,7 @@
 }
 
 .ahpt-saaty-note {
-  font-size: 0.7rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
   line-height: 1.5;
   margin-top: 4px;
@@ -473,7 +471,7 @@
 }
 
 .ahpt-fsym {
-  font-size: 1.1rem;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--lab-accent);
   font-family: "DM Mono", monospace;
@@ -481,12 +479,12 @@
 }
 
 .ahpt-fsym--sm {
-  font-size: 0.9rem;
+  font-size: var(--fs-base);
 }
 
 .ahpt-feq {
   color: var(--lab-muted);
-  font-size: 1rem;
+  font-size: var(--fs-base);
 }
 
 .ahpt-ffrac {
@@ -495,7 +493,7 @@
   align-items: center;
   gap: 2px;
   font-family: "DM Mono", monospace;
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
   color: var(--lab-text);
 }
 
@@ -521,7 +519,7 @@
   display: flex;
   gap: 10px;
   align-items: baseline;
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
 }
 
 .ahpt-cr-var dt {
@@ -529,7 +527,7 @@
   font-weight: 700;
   color: var(--lab-accent);
   min-width: 42px;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   flex-shrink: 0;
 }
 
@@ -553,33 +551,33 @@
   border: 1.5px solid;
 }
 
-.ahpt-band--ok   { background: #EAF7F1; border-color: #34D399; }
-.ahpt-band--warn { background: #FFFBEC; border-color: #F59E0B; }
-.ahpt-band--bad  { background: #FFF0F3; border-color: #FF3B5C; }
+.ahpt-band--ok   { background: var(--color-success-bg); border-color: var(--color-success-border); }
+.ahpt-band--warn { background: var(--color-warning-bg); border-color: var(--color-warning); }
+.ahpt-band--bad  { background: var(--color-danger-bg); border-color: var(--color-danger); }
 
 .ahpt-band-range {
   font-family: "DM Mono", monospace;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   margin-bottom: 4px;
 }
 
-.ahpt-band--ok   .ahpt-band-range { color: #059669; }
-.ahpt-band--warn .ahpt-band-range { color: #B45309; }
-.ahpt-band--bad  .ahpt-band-range { color: #FF3B5C; }
+.ahpt-band--ok   .ahpt-band-range { color: var(--color-success); }
+.ahpt-band--warn .ahpt-band-range { color: var(--color-warning); }
+.ahpt-band--bad  .ahpt-band-range { color: var(--color-danger); }
 
 .ahpt-band-title {
-  font-size: 0.72rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   margin-bottom: 4px;
 }
 
-.ahpt-band--ok   .ahpt-band-title { color: #059669; }
-.ahpt-band--warn .ahpt-band-title { color: #B45309; }
-.ahpt-band--bad  .ahpt-band-title { color: #FF3B5C; }
+.ahpt-band--ok   .ahpt-band-title { color: var(--color-success); }
+.ahpt-band--warn .ahpt-band-title { color: var(--color-warning); }
+.ahpt-band--bad  .ahpt-band-title { color: var(--color-danger); }
 
 .ahpt-band-desc {
-  font-size: 0.67rem;
+  font-size: var(--fs-xs);
   color: var(--lab-muted);
   line-height: 1.45;
 }
@@ -591,10 +589,9 @@
 }
 
 .ahpt-field-label {
-  font-size: 0.57rem;
+  font-size: var(--fs-xs);
   color: var(--lab-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   margin-bottom: 8px;
   font-weight: 600;
 }
@@ -606,7 +603,7 @@
 .ahpt-ri-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
 }
 
 .ahpt-ri-table th,
@@ -619,9 +616,8 @@
 .ahpt-ri-table th {
   background: var(--lab-panel-2);
   color: var(--lab-muted);
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.01em;
   font-weight: 600;
 }
 

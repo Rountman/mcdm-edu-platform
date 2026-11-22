@@ -1,142 +1,192 @@
+/* Aliasy pro existující komponenty – všechny hodnoty pochází z tokens.css */
 :root {
-  --lab-accent: #0057ff;
-  --lab-accent-2: #ff3b5c;
-  --lab-bg: #ffffff;
-  --lab-panel: #f5f7fa;
-  --lab-panel-2: #eef1f6;
-  --lab-border: #dde3ed;
-  --lab-text: #0d1526;
-  --lab-muted: #8896ae;
+  --lab-accent: var(--color-primary);
+  --lab-accent-2: var(--color-secondary);
+  --lab-bg: var(--color-surface);
+  --lab-panel: var(--color-surface-2);
+  --lab-panel-2: var(--color-surface-3);
+  --lab-border: var(--color-border);
+  --lab-border-strong: var(--color-border-strong);
+  --lab-text: var(--color-text);
+  --lab-muted: var(--color-text-muted);
+  --lab-danger: var(--color-danger);
+  --lab-success: var(--color-success);
+  --lab-warning: var(--color-warning);
 }
 
 .lab-shell {
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
   color: var(--lab-text);
 }
 
 .lab-shell .lab-title {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
   letter-spacing: -0.02em;
-}
-
-.lab-shell .lab-subtitle {
-  margin: 0.35rem 0 0;
-  color: var(--lab-muted);
-  font-size: 0.86rem;
 }
 
 .lab-shell.lab-panel {
   border: 1px solid var(--lab-border);
   background: var(--lab-bg);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: visible;
 }
 
 .lab-shell .lab-tabs {
   border-bottom: 1px solid var(--lab-border);
   background: var(--lab-panel);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
-/* ── Semantic colour tokens ─────────────────────────────── */
-:root {
-  --lab-danger:  #FF3B5C;
-  --lab-success: #059669;
-  --lab-warning: #F59E0B;
-}
+/* ── Sdílené utility ─────────────────────────────── */
 
-/* ── Shared utility classes ─────────────────────────────── */
-
-/* Card */
 .u-card {
   background: var(--lab-panel);
   border: 1px solid var(--lab-border);
-  border-radius: 14px;
-  padding: 20px 22px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
 }
 
-/* Badge / tag */
 .u-badge {
   display: inline-block;
-  font-size: 0.57rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--lab-accent);
-  background: rgba(0, 87, 255, 0.08);
-  border: 1px solid rgba(0, 87, 255, 0.2);
-  border-radius: 4px;
-  padding: 3px 8px;
-  margin-bottom: 10px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary);
+  background: var(--color-primary-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  margin-bottom: var(--space-2);
 }
 
-/* Step tag row */
 .u-step-tag {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--lab-muted);
-  font-weight: 600;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  font-size: var(--fs-md);
+  color: var(--lab-text);
+  font-weight: var(--fw-bold);
+  margin: 0 0 var(--space-4);
 }
 .u-badge-n {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  background: var(--lab-accent);
-  color: #fff;
-  font-size: 0.6rem;
-  font-weight: 700;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
 }
 
-/* Toolbar button */
 .u-tbtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 7px;
-  font-size: 0.74rem;
-  font-weight: 600;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
-  border: 1px solid var(--lab-border);
+  border: 1px solid var(--lab-border-strong);
   background: var(--lab-bg);
   color: var(--lab-text);
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
   font-family: inherit;
 }
-.u-tbtn:hover { border-color: var(--lab-accent); color: var(--lab-accent); }
-.u-tbtn--primary { background: var(--lab-accent); border-color: var(--lab-accent); color: #fff; }
-.u-tbtn--primary:hover { background: #0046d0; border-color: #0046d0; color: #fff; }
+.u-tbtn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.u-tbtn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.u-tbtn--primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: #fff; }
 
-/* Text input */
 .u-text-input {
   background: var(--lab-bg);
-  border: 1px solid var(--lab-border);
-  border-radius: 7px;
+  border: 1px solid var(--lab-border-strong);
+  border-radius: var(--radius-sm);
   color: var(--lab-text);
-  padding: 6px 9px;
-  font-size: 0.78rem;
-  outline: none;
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  font-size: var(--fs-base);
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color var(--dur-fast);
   font-family: inherit;
 }
-.u-text-input:focus { border-color: var(--lab-accent); }
+.u-text-input:focus { border-color: var(--color-primary); }
 
-/* Field label */
 .u-field-label {
-  font-size: 0.58rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-  font-weight: 600;
+  margin-bottom: var(--space-1);
+  font-weight: var(--fw-semibold);
+}
+
+/* Výrazné hlášky – stav vždy nese i text */
+.u-alert {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+}
+.u-alert--danger { background: var(--color-danger-bg); border-color: var(--color-danger); color: var(--color-danger); }
+.u-alert--warning { background: var(--color-warning-bg); border-color: var(--color-warning); color: var(--color-warning-text); }
+
+/* Prázdný stav výsledků */
+.u-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 140px;
+  padding: var(--space-5);
+  border: 1px dashed var(--lab-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--lab-panel);
+  color: var(--lab-muted);
+  font-size: var(--fs-base);
+  text-align: center;
+}
+
+/* Tabulka výsledků pro čtečky i přesné odečtení */
+.u-res-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--space-3);
+}
+.u-res-table caption {
+  text-align: left;
+  font-weight: var(--fw-semibold);
+  color: var(--lab-muted);
+  padding-bottom: var(--space-2);
+}
+.u-res-table th,
+.u-res-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--lab-border);
+  text-align: right;
+}
+.u-res-table th:first-child,
+.u-res-table td:first-child { text-align: left; }
+.u-res-table thead th { color: var(--lab-muted); font-weight: var(--fw-semibold); }
+
+.u-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

@@ -8,22 +8,22 @@ import {
   CENTER_IDX,
 } from './ahp.constants';
 
+// Slovní význam stupňů Saatyho škály (sudé = mezistupeň)
+const SAATY_WORDS = {
+  1: 'stejně důležité',
+  2: 'mezi stejně a mírně',
+  3: 'mírně důležitější',
+  4: 'mezi mírně a silně',
+  5: 'silně důležitější',
+  6: 'mezi silně a velmi silně',
+  7: 'velmi silně důležitější',
+  8: 'mezi velmi silně a extrémně',
+  9: 'extrémně důležitější',
+};
+
 function toSigned(v) {
   if (Math.abs(v - 1) < 0.01) return 0;
   return v >= 1 ? Math.round(v) : -Math.round(1 / v);
-}
-
-function sliderBadgeStyle(color) {
-  return {
-    fontSize: '0.68rem',
-    fontWeight: 700,
-    fontFamily: 'monospace',
-    background: `${color}12`,
-    border: `1px solid ${color}30`,
-    color,
-    padding: '2px 8px',
-    borderRadius: 5,
-  };
 }
 
 export default function SaatySlider({ value, nameA, nameB, onChange }) {
@@ -41,7 +41,11 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
   const absVal = Math.abs(signed);
   const displayVal = signed > 0 ? `${absVal}:1` : signed < 0 ? `1:${absVal}` : '1:1';
   const winner = signed > 0 ? nameA : nameB;
+  const loser = signed > 0 ? nameB : nameA;
   const fillColor = signed > 0 ? ACCENT : signed < 0 ? ACCENT2 : MUTED;
+  const verdict = isEqual
+    ? `${nameA} a ${nameB} jsou stejně důležité`
+    : `${winner} je oproti ${loser}: ${SAATY_WORDS[absVal]}`;
 
   const idxFromX = (clientX) => {
     const rect = trackRef.current.getBoundingClientRect();
@@ -50,13 +54,15 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
   };
 
   const applyIdx = (i) => {
-    const raw = SAATY_STEPS[i];
+    const clamped = Math.max(0, Math.min(STEP_COUNT - 1, i));
+    const raw = SAATY_STEPS[clamped];
     if (raw === 0) onChange(1);
     else onChange(raw > 0 ? raw : 1 / Math.abs(raw));
   };
 
   const handlePointerDown = (e) => {
     e.preventDefault();
+    trackRef.current.focus();
     dragging.current = true;
     trackRef.current.setPointerCapture(e.pointerId);
     applyIdx(idxFromX(e.clientX));
@@ -70,34 +76,61 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
     dragging.current = false;
   };
 
+  // Klávesnice: šipky po jednom stupni, PageUp/Down po třech, Home/End krajní hodnoty
+  const handleKeyDown = (e) => {
+    const delta = {
+      ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -3, PageUp: 3,
+    }[e.key];
+    let next = null;
+    if (delta !== undefined) {
+      // Polohy −1, 0, +1 znamenají všechny 1:1 – přeskočit je, aby se jezdec opravdu posunul
+      const dir = Math.sign(delta);
+      next = idx + delta;
+      while (next > 0 && next < STEP_COUNT - 1 && Math.abs(SAATY_STEPS[next]) <= 1
+        && Math.abs(SAATY_STEPS[idx]) <= 1) next += dir;
+    } else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = STEP_COUNT - 1;
+    if (next === null) return;
+    e.preventDefault();
+    applyIdx(next);
+  };
+
   const tickLabels = SAATY_STEPS.map((step) => (step === 0 ? '1' : String(Math.abs(step))));
 
   return (
     <div className="ahp-slider-wrap">
       <div className="ahp-slider-header-row">
-        <span className="ahp-slider-name">{nameB}</span>
-        <span style={sliderBadgeStyle(isEqual ? MUTED : fillColor)}>
-          {isEqual ? '1:1' : displayVal}
+        <span className="ahp-slider-name" title={nameB}>{nameB}</span>
+        <span className="ahp-slider-badge" style={{ color: fillColor, borderColor: fillColor }}>
+          {displayVal}
         </span>
-        <span className="ahp-slider-name ahp-slider-name-right">{nameA}</span>
+        <span className="ahp-slider-name ahp-slider-name-right" title={nameA}>{nameA}</span>
       </div>
 
       <div className="ahp-slider-track-wrap">
         <div
           ref={trackRef}
           className="ahp-slider-track"
+          role="slider"
+          tabIndex={0}
+          aria-label={`Srovnání ${nameB} a ${nameA}`}
+          aria-valuemin={0}
+          aria-valuemax={STEP_COUNT - 1}
+          aria-valuenow={idx}
+          aria-valuetext={`${verdict} (${displayVal})`}
+          onKeyDown={handleKeyDown}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
+          <div className="ahp-slider-rail" />
           <div
             className="ahp-slider-fill"
             style={{
               left: pct < 0.5 ? `${pct * 100}%` : '50%',
               right: pct > 0.5 ? `${(1 - pct) * 100}%` : '50%',
               background: fillColor,
-              opacity: 0.25,
             }}
           />
           <div
@@ -110,17 +143,16 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
         </div>
       </div>
 
-      <div className="ahp-slider-ticks">
+      <div className="ahp-slider-ticks" aria-hidden="true">
         {tickLabels.map((label, i) => {
           const p = (i / (STEP_COUNT - 1)) * 100;
           return (
             <span
               key={i}
-              className="ahp-slider-tick"
+              className={`ahp-slider-tick${i === idx ? ' ahp-slider-tick--active' : ''}`}
               style={{
                 left: `${p}%`,
                 color: i < CENTER_IDX ? ACCENT2 : i > CENTER_IDX ? ACCENT : MUTED,
-                fontWeight: i === CENTER_IDX ? 700 : 500,
               }}
             >
               {label}
@@ -130,7 +162,7 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
       </div>
 
       <div className="ahp-winner-line" style={{ color: isEqual ? MUTED : fillColor }}>
-        {isEqual ? 'Rovnocenné' : `${winner} je důležitějši`}
+        {isEqual ? 'Rovnocenné' : `${winner}: ${SAATY_WORDS[absVal]}`}
       </div>
     </div>
   );

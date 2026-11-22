@@ -107,48 +107,49 @@ export default function SMARTLab() {
       <div className="smrt-toolbar">
         <input ref={fileRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportFile} />
         <button type="button" className="smrt-tbtn" onClick={() => fileRef.current?.click()}>
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
           Načíst data
         </button>
         <button type="button" className="smrt-tbtn smrt-tbtn--primary" onClick={handleExport}>
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
           Uložit data
         </button>
-        {importError && <span className="smrt-tbtn-error">{importError}</span>}
+        {importError && <span className="smrt-tbtn-error" role="alert">{importError}</span>}
       </div>
 
       {/* Step 1 – Criteria */}
-      <div className="smrt-card">
-        <div className="smrt-step-tag">
-          <span className="smrt-step-badge">1</span>
+      <section className="smrt-card" aria-labelledby="smrt-step1">
+        <h2 className="smrt-step-tag" id="smrt-step1">
+          <span className="smrt-step-badge" aria-hidden="true">1</span>
           Definice kritérií
-        </div>
+        </h2>
         <div className="smrt-config-row">
           <div>
-            <div className="smrt-field-label">Počet kritérií</div>
-            <select className="smrt-select" value={nCrit} onChange={e => setNCrit(Number(e.target.value))}>
+            <label className="smrt-field-label" htmlFor="smrt-n-crit">Počet kritérií</label>
+            <select id="smrt-n-crit" className="smrt-select" value={nCrit} onChange={e => setNCrit(Number(e.target.value))}>
               {[2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <div>
-            <div className="smrt-field-label">Počet alternativ</div>
-            <select className="smrt-select" value={nAlts} onChange={e => setNAlts(Number(e.target.value))}>
+            <label className="smrt-field-label" htmlFor="smrt-n-alts">Počet alternativ</label>
+            <select id="smrt-n-alts" className="smrt-select" value={nAlts} onChange={e => setNAlts(Number(e.target.value))}>
               {[2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
         </div>
 
         <div className="smrt-crit-grid">
-          <div className="smrt-crit-header">
-            <span>Název</span>
+          <div className="smrt-crit-header" aria-hidden="true">
+            <span>Název kritéria</span>
             <span>Typ</span>
-            <span>Váha (0–100)</span>
-            <span className="smrt-right">{(100).toFixed(0)} %</span>
+            <span>Váha (posuvník 0–100)</span>
+            <span className="smrt-right">Podíl</span>
           </div>
           {cNames.map((name, j) => (
             <div key={j} className="smrt-crit-row">
               <input
                 className="smrt-name-input"
+                aria-label={`Název kritéria ${j + 1}`}
                 value={name}
                 onChange={e => {
                   const next = [...critNames];
@@ -160,38 +161,45 @@ export default function SMARTLab() {
               <button
                 type="button"
                 className={`smrt-type-btn${critTypes[j] === 'cost' ? ' smrt-type-btn--cost' : ''}`}
+                aria-label={`Typ kritéria ${name}: ${critTypes[j] === 'benefit' ? 'benefit, více je lépe' : 'cost, méně je lépe'}. Kliknutím přepnete.`}
                 onClick={() => { toggleType(j); setResults(null); }}
               >
-                {critTypes[j] === 'benefit' ? 'Benefit' : 'Cost'}
+                <span aria-hidden="true">{critTypes[j] === 'benefit' ? '↑ Benefit' : '↓ Cost'}</span>
               </button>
               <input
                 type="range" min={0} max={100} step={1}
                 className="smrt-weight-slider"
+                aria-label={`Váha kritéria ${name}`}
+                aria-valuetext={`${weights[j]} bodů, podíl ${((weights[j] / totalW) * 100).toFixed(0)} %`}
                 value={weights[j]}
                 onChange={e => { setWeight(j, e.target.value); setResults(null); }}
               />
               <span className="smrt-right smrt-weight-pct">
+                <span className="smrt-weight-raw">{weights[j]} b. · </span>
                 {((weights[j] / totalW) * 100).toFixed(0)} %
               </span>
             </div>
           ))}
         </div>
-      </div>
+        <p className="smrt-hint">
+          Podíl = váha kritéria / součet všech vah. Benefit: vyšší hodnota je lepší, cost: nižší hodnota je lepší.
+        </p>
+      </section>
 
       {/* Step 2 – Ratings */}
-      <div className="smrt-card">
-        <div className="smrt-step-tag">
-          <span className="smrt-step-badge">2</span>
+      <section className="smrt-card" aria-labelledby="smrt-step2">
+        <h2 className="smrt-step-tag" id="smrt-step2">
+          <span className="smrt-step-badge" aria-hidden="true">2</span>
           Hodnocení alternativ
-          <span style={{ marginLeft: 'auto', fontSize: '0.58rem' }}>Škála 0–100</span>
-        </div>
+          <span className="smrt-step-note">škála 0–100</span>
+        </h2>
         <div className="smrt-table-wrap">
           <table className="smrt-table">
             <thead>
               <tr>
-                <th className="smrt-th-alt" />
+                <th scope="col" className="smrt-th-alt">Alternativa</th>
                 {cNames.map((cn, j) => (
-                  <th key={j} className="smrt-th">
+                  <th key={j} scope="col" className="smrt-th">
                     <div>{cn}</div>
                     <div className="smrt-th-type">{critTypes[j] === 'benefit' ? '↑ benefit' : '↓ cost'}</div>
                   </th>
@@ -204,6 +212,7 @@ export default function SMARTLab() {
                   <td className="smrt-td-alt">
                     <input
                       className="smrt-name-input"
+                      aria-label={`Název alternativy ${ai + 1}`}
                       value={an}
                       onChange={e => {
                         const next = [...altNames];
@@ -213,11 +222,12 @@ export default function SMARTLab() {
                       }}
                     />
                   </td>
-                  {cNames.map((_, j) => (
+                  {cNames.map((cn, j) => (
                     <td key={j} className="smrt-td">
                       <input
                         type="number" min={0} max={100} step={1}
                         className="smrt-rating-input"
+                        aria-label={`Hodnocení ${an} podle ${cn}`}
                         value={ratings[ai][j]}
                         onChange={e => { setRating(ai, j, e.target.value); setResults(null); }}
                       />
@@ -228,33 +238,28 @@ export default function SMARTLab() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <div className="smrt-calc-row">
+        <button type="button" className="smrt-calc-btn" onClick={handleCalc} disabled={loading}>
+          {loading ? 'Počítám…' : 'Vypočítat skóre'}
+        </button>
+        {calcError && <p className="smrt-tbtn-error" role="alert">{calcError}</p>}
       </div>
 
-      <div className="smrt-two-col">
-        {/* Left – Calculate */}
-        <div>
-          <button type="button" className="smrt-calc-btn" onClick={handleCalc} disabled={loading}>
-            {loading ? 'Počítám…' : 'Vypočítat skóre'}
-          </button>
-          {calcError && <p className="smrt-tbtn-error" role="alert">{calcError}</p>}
-        </div>
-
-        {/* Right – Results */}
-        <div>
-          <div className="smrt-step-tag">
-            <span className="smrt-step-badge">3</span>
-            Výsledky
+      <section aria-labelledby="smrt-step3" aria-live="polite">
+        <h2 className="smrt-step-tag" id="smrt-step3">
+          <span className="smrt-step-badge" aria-hidden="true">3</span>
+          Výsledky
+        </h2>
+        {results ? (
+          <SMARTResults results={results} criteriaNames={cNames} altNames={aNames} />
+        ) : (
+          <div className="u-placeholder">
+            Výsledky zatím nejsou spočtené. Vyplňte hodnocení a stiskněte „Vypočítat skóre“.
           </div>
-          {results ? (
-            <SMARTResults results={results} criteriaNames={cNames} altNames={aNames} />
-          ) : (
-            <div className="smrt-placeholder">
-              <span className="smrt-placeholder-icon">[]</span>
-              Spusťte výpočet pro zobrazení skóre
-            </div>
-          )}
-        </div>
-      </div>
+        )}
+      </section>
     </div>
   );
 }

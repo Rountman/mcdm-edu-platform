@@ -170,7 +170,7 @@ export default function AHPInputTable() {
           Uložit data
         </button>
         {importError && (
-          <span className="ahp-toolbar-error">{importError}</span>
+          <span className="ahp-toolbar-error" role="alert">{importError}</span>
         )}
       </div>
 
@@ -185,16 +185,24 @@ export default function AHPInputTable() {
           >
             <span className="ahp-step-badge">{s + 1}</span>
             <span className="ahp-stepper-label">{label}</span>
-            {stepWarn[s] && <span className="ahp-stepper-warn" title="Vyžaduje pozornost">!</span>}
-            {s === 3 && results && <span className="ahp-stepper-ok" title="Spočteno">✓</span>}
+            {stepWarn[s] && (
+              <span className="ahp-stepper-warn" title="Vyžaduje pozornost">
+                <span aria-hidden="true">!</span><span className="u-visually-hidden"> (vyžaduje pozornost)</span>
+              </span>
+            )}
+            {s === 3 && results && (
+              <span className="ahp-stepper-ok" title="Spočteno">
+                <span aria-hidden="true">✓</span><span className="u-visually-hidden"> (spočteno)</span>
+              </span>
+            )}
           </button>
         ))}
       </nav>
 
-      <div className="ahp-step-tag">
-        <span className="ahp-step-badge">{step + 1}</span>
-        {STEPS[step]}
-      </div>
+      <h2 className="ahp-step-tag">
+        <span className="ahp-step-badge" aria-hidden="true">{step + 1}</span>
+        <span><span className="u-visually-hidden">Krok {step + 1}: </span>{STEPS[step]}</span>
+      </h2>
 
       {step === 0 && (
         <AHPStepSetup
@@ -247,8 +255,7 @@ export default function AHPInputTable() {
         ) : (
           <>
             <div className="ahp-placeholder">
-              <span className="ahp-placeholder-icon">[]</span>
-              Spusťte výpočet pro zobrazení pořadí alternativ
+              Výsledky zatím nejsou spočtené. Spusťte výpočet tlačítkem níže.
             </div>
             {calcBlock}
           </>

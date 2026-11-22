@@ -4,20 +4,20 @@ import { formatSaaty } from './ahp.math';
 export default function AHPMatrix({ names, matrix, title = 'Srovnávací matice' }) {
   return (
     <div className="ahp-card ahp-matrix-wrap">
-      <div className="ahp-field-label" style={{ marginBottom: 10 }}>{title}</div>
       <table className="ahp-matrix-table">
+        <caption>{title} <span className="ahp-matrix-caption-hint">(řádek vůči sloupci)</span></caption>
         <thead>
           <tr>
-            <th className="ahp-matrix-top-left" />
+            <td className="ahp-matrix-top-left" />
             {names.map((n, i) => (
-              <th key={i} className="ahp-matrix-th" title={n}>{n.slice(0, 7)}</th>
+              <th key={i} scope="col" className="ahp-matrix-th">{n}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {matrix.map((row, i) => (
             <tr key={i}>
-              <td className="ahp-matrix-row-head" title={names[i]}>{names[i].slice(0, 7)}</td>
+              <th scope="row" className="ahp-matrix-row-head">{names[i]}</th>
               {row.map((cell, j) => {
                 const isDiag = i === j;
                 const isHigh = cell > 3;
@@ -31,7 +31,7 @@ export default function AHPMatrix({ names, matrix, title = 'Srovnávací matice'
                       fontWeight: isDiag ? 400 : 600,
                     }}
                   >
-                    {isDiag ? '-' : formatSaaty(cell)}
+                    {isDiag ? '–' : formatSaaty(cell)}
                   </td>
                 );
               })}

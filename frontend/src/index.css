@@ -1,7 +1,16 @@
+@import './styles/tokens.css';
 @import './styles/lab-theme.css';
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  /* Režim „Velké písmo“ (projektor) zvětší vše, co je v rem */
+  font-size: 100%;
+}
+html[data-text-size='large'] {
+  font-size: 125%;
 }
 
 html,
@@ -12,7 +21,72 @@ body,
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  background: #f2f5fb;
-  color: #0d1526;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Viditelný focus pro klávesnici na všech ovládacích prvcích */
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex='-1'])):focus-visible {
+  outline: var(--focus-ring) !important;
+  outline-offset: var(--focus-offset);
+}
+
+/* Cíle programového focusu (nadpis, main) – bez rámečku */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Okraje ovládacích prvků s kontrastem ≥ 3:1 */
+:where(input:not([type='range']):not([type='checkbox']):not([type='radio']), select, textarea):not([class*='invalid']) {
+  border-color: var(--color-border-strong);
+}
+:where(input, select, textarea):not([class*='invalid']):focus {
+  border-color: var(--color-primary);
+}
+
+/* Číselné hodnoty se nehýbou při změně */
+table, input[inputmode='decimal'], input[type='number'] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dotyková zařízení: větší cíle */
+@media (pointer: coarse) {
+  :where(button, select, input:not([type='range']):not([type='checkbox']):not([type='radio'])) {
+    min-height: var(--control-h-touch);
+  }
+}
+
+/* Čitelná délka řádku souvislého textu (teorie i nápovědy) */
+#module-tabpanel p {
+  max-width: 75ch;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: var(--z-skip);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-md);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

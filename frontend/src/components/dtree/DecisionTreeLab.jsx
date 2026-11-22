@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import './DecisionTreeLab.css';
 
 // ── Layout constants ───────────────────────────────────────
@@ -175,8 +175,16 @@ export default function DecisionTreeLab() {
   const selEdge = selKind === 'edge' ? tree.edges.find(e => e.id === sel) : null;
   const isRoot  = sel === root;
 
-  function pick(id, kind, ev) { ev.stopPropagation(); setSel(id); setSelKind(kind); }
+  const opener = useRef(null);
+  function pick(id, kind, ev) { ev.stopPropagation(); opener.current = ev.currentTarget; setSel(id); setSelKind(kind); }
   function deselect() { setSel(null); setSelKind(null); }
+  // Zavření popoveru vrátí focus na uzel/hranu, ze které se otevřel (ovládání klávesnicí)
+  function closePopover() { deselect(); opener.current?.focus?.(); }
+  // Uzly a hrany v SVG: Enter / mezerník = stejné jako kliknutí
+  const keyPick = (id, kind) => (ev) => {
+    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(id, kind, ev); }
+  };
+  const TYPE_NAMES = { decision: 'Rozhodovací uzel', chance: 'Náhodový uzel', terminal: 'Terminální uzel' };
 
   function updNode(id, patch) {
     setTree(t => ({ ...t, nodes: { ...t.nodes, [id]: { ...t.nodes[id], ...patch } } }));
@@ -211,7 +219,7 @@ export default function DecisionTreeLab() {
       if (newType === 'chance')
         nt = { ...nt, edges: nt.edges.map(e => e.from === id && e.prob == null ? { ...e, prob: 0.5 } : e) };
       if (newType === 'decision')
-        nt = { ...nt, edges: nt.edges.map(e => { if (e.from !== id) return e; const { prob, ...rest } = e; return rest; }) };
+        nt = { ...nt, edges: nt.edges.map(e => { if (e.from !== id) return e; const rest = { ...e }; delete rest.prob; return rest; }) };
       return { ...nt, nodes: { ...nt.nodes, [id]: { ...nt.nodes[id], type: newType, ...(newType === 'terminal' ? { value: 0 } : {}) } } };
     });
   }
@@ -240,7 +248,7 @@ export default function DecisionTreeLab() {
 
       {/* Toolbar */}
       <div className="dtl-toolbar">
-        <span className="dtl-toolbar-title">Rozhodovací strom — interaktivní stavba</span>
+        <span className="dtl-toolbar-title">Interaktivní stavba stromu</span>
         <div className="dtl-toolbar-legend">
           <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--dec" />Rozhodovací □</span>
           <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--chance" />Náhodový ○</span>
@@ -251,12 +259,14 @@ export default function DecisionTreeLab() {
 
       {/* SVG tree with inline popovers */}
       <div className="dtl-card">
-        <div className="dtl-step-tag"><span className="dtl-badge-n">1</span>Strom — klikněte na uzel nebo hranu pro editaci</div>
+        <h2 className="dtl-step-tag"><span className="dtl-badge-n" aria-hidden="true">1</span>Strom</h2>
+        <p className="dtl-hint">Uzel nebo větev upravíte kliknutím, případně klávesou Tab a Enter. Escape úpravu zavře.</p>
 
         {/* Aspect-ratio container so absolute popovers align with SVG nodes */}
+        <div className="dtl-tree-scroll">
         <div
           className="dtl-tree-container"
-          style={{ paddingBottom: `${((svgH / svgW) * 100).toFixed(1)}%` }}
+          style={{ aspectRatio: `${svgW} / ${svgH}` }}
           onClick={deselect}
         >
           <svg
@@ -274,10 +284,12 @@ export default function DecisionTreeLab() {
               const path  = edgePath(s.x, s.y, d.x, d.y);
               const mx    = (s.x + d.x) / 2, my = (s.y + d.y) / 2;
               return (
-                <g key={e.id} onClick={ev => pick(e.id, 'edge', ev)} style={{ cursor: 'pointer' }}>
-                  <path d={path} fill="none" stroke={isSel ? '#0057FF' : isOpt ? '#4D88FF' : '#DDE3ED'} strokeWidth={isSel ? 3 : isOpt ? 2.5 : 1.5} />
+                <g key={e.id} className="dtl-hit" role="button" tabIndex={0}
+                  aria-label={`Větev ${e.label}${e.prob != null ? `, pravděpodobnost ${e.prob}` : ''}${isOpt ? ', optimální' : ''}. Upravit.`}
+                  onClick={ev => pick(e.id, 'edge', ev)} onKeyDown={keyPick(e.id, 'edge')} style={{ cursor: 'pointer' }}>
+                  <path d={path} fill="none" stroke={isSel ? '#0057FF' : isOpt ? '#0057FF' : '#8A94A6'} strokeWidth={isSel ? 3.5 : isOpt ? 3 : 1.5} strokeDasharray={isOpt || isSel ? undefined : '5 4'} />
                   <path d={path} fill="none" stroke="transparent" strokeWidth={14} />
-                  <text x={mx} y={my - 7} textAnchor="middle" fontSize="9" fill={isSel ? '#0057FF' : isOpt ? '#0057FF' : '#8896AE'} fontWeight={isOpt ? '700' : '400'}>
+                  <text x={mx} y={my - 7} textAnchor="middle" fontSize="10" fill={isSel || isOpt ? '#0046CC' : '#4A5875'} fontWeight={isOpt ? '700' : '500'}>
                     {e.label}{e.prob != null ? ` (${e.prob})` : ''}
                   </text>
                 </g>
@@ -292,34 +304,40 @@ export default function DecisionTreeLab() {
               const ev_val = emvData.emv[id];
 
               if (node.type === 'chance') return (
-                <g key={id} onClick={ev => pick(id, 'node', ev)} style={{ cursor: 'pointer' }}>
+                <g key={id} className="dtl-hit" role="button" tabIndex={0}
+                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, hodnota ${fmtVal(node.value)}` : ev_val != null ? `, EMV ${fmtVal(ev_val)}` : ''}. Upravit.`}
+                  onClick={ev => pick(id, 'node', ev)} onKeyDown={keyPick(id, 'node')} style={{ cursor: 'pointer' }}>
                   <circle cx={p.cx} cy={p.cy} r={CR + (isSel ? 3 : 0)}
-                    fill={isSel ? '#FEF3C7' : '#FFFBEB'} stroke="#F59E0B" strokeWidth={isSel ? 2.5 : 1.5} />
-                  <text x={p.cx} y={p.cy - 4} textAnchor="middle" fontSize="9.5" fill="#92400E" fontWeight="700">{node.label}</text>
-                  {ev_val != null && <text x={p.cx} y={p.cy + 11} textAnchor="middle" fontSize="8.5" fill="#F59E0B" fontWeight="700">{fmtVal(ev_val)}</text>}
+                    fill={isSel ? '#FEF3C7' : '#FFFBEB'} stroke="#B45309" strokeWidth={isSel ? 2.5 : 1.5} />
+                  <text x={p.cx} y={p.cy - 4} textAnchor="middle" fontSize="10" fill="#92400E" fontWeight="700">{node.label}</text>
+                  {ev_val != null && <text x={p.cx} y={p.cy + 11} textAnchor="middle" fontSize="9.5" fill="#92400E" fontWeight="700">{fmtVal(ev_val)}</text>}
                 </g>
               );
 
               if (node.type === 'terminal') {
                 const pos_val = (node.value ?? 0) >= 0;
                 return (
-                  <g key={id} onClick={ev => pick(id, 'node', ev)} style={{ cursor: 'pointer' }}>
+                  <g key={id} className="dtl-hit" role="button" tabIndex={0}
+                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, hodnota ${fmtVal(node.value)}` : ev_val != null ? `, EMV ${fmtVal(ev_val)}` : ''}. Upravit.`}
+                  onClick={ev => pick(id, 'node', ev)} onKeyDown={keyPick(id, 'node')} style={{ cursor: 'pointer' }}>
                     <rect x={p.cx - NODE_W / 2} y={p.cy - NODE_H / 2} width={NODE_W} height={NODE_H} rx={7}
                       fill={isSel ? (pos_val ? '#DCFCE7' : '#FEE2E2') : (pos_val ? '#ECFDF5' : '#FFF5F5')}
-                      stroke={pos_val ? '#34D399' : '#FCA5A5'} strokeWidth={isSel ? 2.5 : 1.5} />
-                    <text x={p.cx} y={p.cy - 5} textAnchor="middle" fontSize="9.5" fill={pos_val ? '#065F46' : '#991B1B'} fontWeight="600">{node.label}</text>
-                    <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9" fill={pos_val ? '#059669' : '#FF3B5C'} fontWeight="700">{fmtVal(node.value)}</text>
+                      stroke={pos_val ? '#047857' : '#C8102E'} strokeWidth={isSel ? 2.5 : 1.5} />
+                    <text x={p.cx} y={p.cy - 5} textAnchor="middle" fontSize="10" fill={pos_val ? '#065F46' : '#991B1B'} fontWeight="600">{node.label}</text>
+                    <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9.5" fill={pos_val ? '#047857' : '#C8102E'} fontWeight="700">{fmtVal(node.value)}</text>
                   </g>
                 );
               }
 
               // decision
               return (
-                <g key={id} onClick={ev => pick(id, 'node', ev)} style={{ cursor: 'pointer' }}>
+                <g key={id} className="dtl-hit" role="button" tabIndex={0}
+                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, hodnota ${fmtVal(node.value)}` : ev_val != null ? `, EMV ${fmtVal(ev_val)}` : ''}. Upravit.`}
+                  onClick={ev => pick(id, 'node', ev)} onKeyDown={keyPick(id, 'node')} style={{ cursor: 'pointer' }}>
                   <rect x={p.cx - NODE_W / 2} y={p.cy - NODE_H / 2} width={NODE_W} height={NODE_H} rx={7}
-                    fill={isSel ? '#DBEAFE' : '#EFF6FF'} stroke={isSel ? '#0057FF' : '#93C5FD'} strokeWidth={isSel ? 2.5 : 1.5} />
-                  <text x={p.cx} y={p.cy - 5} textAnchor="middle" fontSize="9.5" fill="#1E40AF" fontWeight="700">{node.label}</text>
-                  {ev_val != null && <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="8.5" fill="#0057FF" fontWeight="700">{fmtVal(ev_val)}</text>}
+                    fill={isSel ? '#DBEAFE' : '#EFF6FF'} stroke={isSel ? '#0057FF' : '#5B8DEF'} strokeWidth={isSel ? 2.5 : 1.5} />
+                  <text x={p.cx} y={p.cy - 5} textAnchor="middle" fontSize="10" fill="#1E40AF" fontWeight="700">{node.label}</text>
+                  {ev_val != null && <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9.5" fill="#0046CC" fontWeight="700">{fmtVal(ev_val)}</text>}
                 </g>
               );
             })}
@@ -329,40 +347,42 @@ export default function DecisionTreeLab() {
           {selNode && pos[sel] && (
             <div
               className="dtl-popover"
+              role="dialog" aria-label={`Úprava: ${selNode.label}`}
               style={{ left: pctX(pos[sel].cx), top: pctY(pos[sel].cy), transform: popoverTransform(pos[sel].cy) }}
               onClick={e => e.stopPropagation()}
+              onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closePopover(); } }}
             >
               <div className="dtl-popover-header">
-                <span className="dtl-popover-icon">
+                <span className="dtl-popover-icon" aria-hidden="true">
                   {selNode.type === 'decision' ? '□' : selNode.type === 'chance' ? '○' : '◼'}
                 </span>
                 <span className="dtl-popover-title">
                   {selNode.type === 'decision' ? 'Rozhodovací uzel' : selNode.type === 'chance' ? 'Náhodový uzel' : 'Terminální uzel'}
                 </span>
-                <button type="button" className="dtl-popover-close" onClick={deselect}>✕</button>
+                <button type="button" className="dtl-popover-close" aria-label="Zavřít" onClick={closePopover}>✕</button>
               </div>
 
               <div className="dtl-popover-field">
-                <div className="dtl-popover-label">Název</div>
-                <input className="dtl-popover-input" value={selNode.label}
-                  onChange={e => updNode(sel, { label: e.target.value })}
-                  onKeyDown={e => e.key === 'Escape' && deselect()} />
+                <label className="dtl-popover-label" htmlFor="dtl-node-name">Název</label>
+                <input id="dtl-node-name" className="dtl-popover-input" value={selNode.label} autoFocus
+                  onChange={e => updNode(sel, { label: e.target.value })} />
               </div>
 
               {selNode.type === 'terminal' && (
                 <div className="dtl-popover-field">
-                  <div className="dtl-popover-label">Hodnota (Kč)</div>
-                  <input type="number" className="dtl-popover-input dtl-popover-input--mono"
+                  <label className="dtl-popover-label" htmlFor="dtl-node-value">Hodnota (Kč)</label>
+                  <input id="dtl-node-value" type="number" className="dtl-popover-input dtl-popover-input--mono"
                     value={selNode.value ?? 0}
                     onChange={e => updNode(sel, { value: Number(e.target.value) })} />
                 </div>
               )}
 
               {!isRoot && (
-                <div className="dtl-popover-types">
+                <div className="dtl-popover-types" role="group" aria-label="Typ uzlu">
                   {[['decision', '□', 'Rozh.'], ['chance', '○', 'Náhoda'], ['terminal', '◼', 'Terminál']].map(([t, icon, label]) => (
                     <button type="button" key={t}
                       className={`dtl-chip dtl-chip--${t}${selNode.type === t ? ' dtl-chip--active' : ''}`}
+                      aria-pressed={selNode.type === t}
                       onClick={() => convertType(sel, t)}>
                       {icon} {label}
                     </button>
@@ -388,24 +408,26 @@ export default function DecisionTreeLab() {
             return (
               <div
                 className="dtl-popover dtl-popover--edge"
+                role="dialog" aria-label={`Úprava větve ${selEdge.label}`}
                 style={{ left: pctX(mid.mx), top: pctY(mid.my), transform: popoverTransform(mid.my) }}
                 onClick={e => e.stopPropagation()}
+                onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closePopover(); } }}
               >
                 <div className="dtl-popover-header">
                   <span className="dtl-popover-title">Hrana / větev</span>
-                  <button type="button" className="dtl-popover-close" onClick={deselect}>✕</button>
+                  <button type="button" className="dtl-popover-close" aria-label="Zavřít" onClick={closePopover}>✕</button>
                 </div>
 
                 <div className="dtl-popover-field">
-                  <div className="dtl-popover-label">Název větve</div>
-                  <input className="dtl-popover-input" value={selEdge.label}
+                  <label className="dtl-popover-label" htmlFor="dtl-edge-name">Název větve</label>
+                  <input id="dtl-edge-name" className="dtl-popover-input" value={selEdge.label} autoFocus
                     onChange={e => updEdge(sel, { label: e.target.value })} />
                 </div>
 
                 {selEdge.prob != null && (
                   <div className="dtl-popover-field">
-                    <div className="dtl-popover-label">Pravděpodobnost (0–1)</div>
-                    <input type="number" min={0} max={1} step={0.05} className="dtl-popover-input dtl-popover-input--mono"
+                    <label className="dtl-popover-label" htmlFor="dtl-edge-prob">Pravděpodobnost (0–1)</label>
+                    <input id="dtl-edge-prob" type="number" min={0} max={1} step={0.05} className="dtl-popover-input dtl-popover-input--mono"
                       value={selEdge.prob}
                       onChange={e => updEdge(sel, { prob: Number(e.target.value) })} />
                   </div>
@@ -414,11 +436,12 @@ export default function DecisionTreeLab() {
             );
           })()}
         </div>
+        </div>
       </div>
 
       {/* Warnings */}
       {probWarns.length > 0 && (
-        <div className="dtl-card dtl-warn-panel">
+        <div className="dtl-card dtl-warn-panel" role="alert">
           {probWarns.map((w, i) => (
             <div key={i} className="dtl-warn-item">
               ⚠ Uzel „{w.label}": součet pravděpodobností = <strong>{w.sum}</strong> (musí být 1.00)
@@ -429,7 +452,7 @@ export default function DecisionTreeLab() {
 
       {/* Results */}
       <div className="dtl-card">
-        <div className="dtl-step-tag"><span className="dtl-badge-n">2</span>Výsledek zpětné indukce (fold-back)</div>
+        <h2 className="dtl-step-tag"><span className="dtl-badge-n" aria-hidden="true">2</span>Výsledek zpětné indukce (fold-back)</h2>
         <div className="dtl-results-grid">
           {root && emvData.emv[root] != null && (
             <div className="dtl-result-item dtl-result-item--primary">
@@ -451,7 +474,7 @@ export default function DecisionTreeLab() {
         </div>
         {probWarns.length === 0 && root && (
           <div className="dtl-result-note">
-            Modrá cesta označuje optimální akci v každém rozhodovacím uzlu (maximalizace EMV).
+            Plná modrá cesta označuje optimální akci v každém rozhodovacím uzlu (maximalizace EMV), ostatní větve jsou přerušované.
           </div>
         )}
       </div>

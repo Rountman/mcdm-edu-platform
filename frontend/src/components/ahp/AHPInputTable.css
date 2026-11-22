@@ -1,5 +1,5 @@
 .ahp-root {
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-family: var(--font-sans);
   background: var(--lab-bg);
   color: var(--lab-text);
 }
@@ -16,14 +16,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 0.72rem;
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  letter-spacing: 0.03em;
   cursor: pointer;
-  border: 1px solid var(--lab-border);
-  background: var(--lab-panel);
+  border: 1px solid var(--lab-border-strong);
+  background: var(--lab-bg);
   color: var(--lab-text);
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
@@ -41,43 +42,42 @@
 }
 
 .ahp-toolbar-btn--primary:hover {
-  background: #0046cc;
-  border-color: #0046cc;
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
   box-shadow: 0 2px 8px rgba(0, 87, 255, 0.3);
 }
 
 .ahp-toolbar-error {
-  font-size: 0.68rem;
-  color: #FF3B5C;
+  font-size: var(--fs-sm);
+  color: var(--color-danger);
   font-weight: 600;
   padding: 6px 10px;
-  background: #FFF0F3;
+  background: var(--color-danger-bg);
   border: 1px solid rgba(255, 59, 92, 0.3);
   border-radius: 6px;
 }
 
 .ahp-step-tag {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--lab-muted);
-  font-weight: 600;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  font-size: var(--fs-md);
+  line-height: var(--lh-tight);
+  color: var(--lab-text);
+  font-weight: 700;
+  margin: 0 0 var(--space-4);
 }
 
 .ahp-step-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
   background: var(--lab-accent);
   color: #fff;
-  font-size: 0.6rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
 }
 
@@ -97,10 +97,9 @@
 }
 
 .ahp-field-label {
-  font-size: 0.58rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   margin-bottom: 5px;
   font-weight: 600;
 }
@@ -108,11 +107,11 @@
 .ahp-select {
   appearance: none;
   background: var(--lab-bg);
-  border: 1px solid var(--lab-border);
+  border: 1px solid var(--lab-border-strong);
   border-radius: 8px;
   color: var(--lab-text);
   padding: 8px 30px 8px 12px;
-  font-size: 0.82rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
   outline: none;
   min-width: 150px;
@@ -131,11 +130,11 @@
 
 .ahp-name-input {
   background: var(--lab-bg);
-  border: 1px solid var(--lab-border);
+  border: 1px solid var(--lab-border-strong);
   border-radius: 7px;
   color: var(--lab-text);
   padding: 7px 10px;
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   outline: none;
   width: 100%;
   box-sizing: border-box;
@@ -172,29 +171,30 @@
 .ahp-calc-btn {
   margin-top: 18px;
   width: 100%;
-  padding: 13px 24px;
-  background: linear-gradient(135deg, var(--lab-accent) 0%, #3b82f6 100%);
+  min-height: 3rem;
+  padding: 0 var(--space-5);
+  background: var(--color-primary);
   color: #fff;
   border: none;
-  border-radius: 9px;
-  font-size: 0.8rem;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--fs-base);
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 87, 255, 0.22);
   transition: opacity 0.18s, transform 0.12s;
 }
 
-.ahp-calc-btn:hover {
-  opacity: 0.88;
-  transform: translateY(-1px);
+.ahp-calc-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
 }
 
 .ahp-calc-btn:disabled {
-  opacity: 0.65;
-  transform: none;
-  cursor: default;
+  background: var(--lab-panel-2);
+  color: var(--lab-muted);
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .ahp-sticky-col {
@@ -210,7 +210,7 @@
 .ahp-matrix-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
 }
 
 .ahp-matrix-table th,
@@ -224,35 +224,46 @@
   padding: 8px;
 }
 
+.ahp-matrix-table caption {
+  text-align: left;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--lab-muted);
+  padding-bottom: var(--space-2);
+}
+
 .ahp-matrix-th {
   background: var(--lab-panel-2);
-  color: var(--lab-muted);
-  font-size: 0.62rem;
+  color: var(--lab-text);
+  font-size: var(--fs-sm);
   font-weight: 600;
   padding: 6px 8px;
   text-align: center;
-  max-width: 52px;
-  overflow: hidden;
-  white-space: nowrap;
+  max-width: 9rem;
+  overflow-wrap: anywhere;
+  line-height: var(--lh-tight);
 }
 
 .ahp-matrix-row-head {
   background: var(--lab-panel-2);
   color: var(--lab-text);
-  font-size: 0.62rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  padding: 0 10px;
-  text-align: right;
-  white-space: nowrap;
+  padding: 6px 10px;
+  text-align: left;
+  max-width: 10rem;
+  overflow-wrap: anywhere;
+  line-height: var(--lh-tight);
 }
 
 .ahp-matrix-cell {
-  width: 52px;
-  height: 46px;
+  min-width: 3.25rem;
+  height: 2.75rem;
   text-align: center;
-  font-family: "DM Mono", monospace;
-  font-size: 0.8rem;
-  transition: background 0.18s;
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  font-variant-numeric: tabular-nums;
+  background: var(--lab-bg);
 }
 
 .ahp-results-card {
@@ -274,7 +285,7 @@
 }
 
 .ahp-weight-name {
-  font-size: 0.7rem;
+  font-size: var(--fs-sm);
   color: var(--lab-text);
   width: 105px;
   overflow: hidden;
@@ -298,7 +309,7 @@
 }
 
 .ahp-weight-pct {
-  font-size: 0.7rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   min-width: 42px;
   text-align: right;
@@ -309,19 +320,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 180px;
+  min-height: 140px;
+  padding: var(--space-5);
+  text-align: center;
   color: var(--lab-muted);
   gap: 10px;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1.5px dashed var(--lab-border);
+  font-size: var(--fs-base);
+  border: 1.5px dashed var(--lab-border-strong);
   border-radius: 12px;
   background: var(--lab-panel);
 }
 
 .ahp-placeholder-icon {
-  font-size: 1.4rem;
+  font-size: var(--fs-xl);
   opacity: 0.25;
 }
 
@@ -338,72 +349,106 @@
 }
 
 .ahp-slider-name {
-  font-size: 0.68rem;
-  color: var(--lab-muted);
-  max-width: 42%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: 0.03em;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--lab-text);
+  max-width: 40%;
+  overflow-wrap: anywhere;
 }
 
 .ahp-slider-name-right {
   text-align: right;
 }
 
-.ahp-slider-track-wrap {
-  padding: 0 7px;
+.ahp-slider-badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  padding: 1px 10px;
+  border: 1.5px solid;
+  border-radius: var(--radius-sm);
+  background: var(--lab-bg);
+  font-variant-numeric: tabular-nums;
 }
 
+.ahp-slider-track-wrap {
+  padding: 0 12px;
+}
+
+/* Celá výška 32 px je zóna pro kliknutí/dotyk; viditelná kolejnice je uvnitř */
 .ahp-slider-track {
-  height: 5px;
-  background: var(--lab-border);
-  border-radius: 3px;
+  height: 32px;
   position: relative;
   cursor: pointer;
   user-select: none;
   touch-action: none;
+  border-radius: var(--radius-sm);
+}
+
+.ahp-slider-rail,
+.ahp-slider-fill {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 3px;
+}
+
+.ahp-slider-rail {
+  left: 0;
+  right: 0;
+  background: var(--lab-border);
 }
 
 .ahp-slider-fill {
-  height: 100%;
-  border-radius: 3px;
-  position: absolute;
-  transition: all 0.12s;
+  opacity: 0.35;
+  transition: left var(--dur-fast), right var(--dur-fast);
 }
 
 .ahp-slider-thumb {
-  width: 15px;
-  height: 15px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 2px solid var(--lab-bg);
+  border: 3px solid var(--lab-bg);
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  cursor: pointer;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgb(13 21 38 / 0.35);
+  transition: left var(--dur-fast);
   z-index: 2;
+}
+
+.ahp-slider-track:focus-visible .ahp-slider-thumb {
+  box-shadow: 0 0 0 3px var(--lab-bg), 0 0 0 6px var(--color-primary);
 }
 
 .ahp-slider-ticks {
   position: relative;
-  height: 16px;
-  margin: 6px 7px 0;
+  height: 18px;
+  margin: 2px 12px 0;
 }
 
 .ahp-slider-tick {
   position: absolute;
   transform: translateX(-50%);
-  font-size: 0.52rem;
+  font-size: var(--fs-xs);
+  font-weight: 500;
   white-space: nowrap;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ahp-slider-tick--active {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .ahp-winner-line {
   text-align: center;
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  margin-top: 5px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin-top: var(--space-2);
 }
 
 @media (max-width: 1200px) {
@@ -435,7 +480,7 @@
   background: var(--lab-panel);
   color: var(--lab-muted);
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -463,16 +508,15 @@
 
 .ahp-stepper-label {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: var(--lh-tight);
+  overflow-wrap: anywhere;
 }
 
 .ahp-stepper-warn,
 .ahp-stepper-ok {
   margin-left: auto;
   flex-shrink: 0;
-  font-size: 0.66rem;
+  font-size: var(--fs-xs);
   font-weight: 800;
 }
 
@@ -501,11 +545,11 @@
 .ahp-input--invalid,
 .ahp-name-input.ahp-input--invalid {
   border-color: var(--lab-danger);
-  background: #FFF7F8;
+  background: var(--color-danger-bg);
 }
 
 .ahp-hint {
-  font-size: 0.7rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
   line-height: 1.5;
   margin: 12px 0 0;
@@ -514,7 +558,7 @@
 .ahp-cons-stats {
   margin-top: 12px;
   font-family: "DM Mono", monospace;
-  font-size: 0.68rem;
+  font-size: var(--fs-sm);
   color: var(--lab-muted);
 }
 
@@ -526,14 +570,14 @@
   padding: 7px 14px;
   border-radius: 7px;
   border: 1px solid;
-  font-size: 0.7rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
 .ahp-cr-badge--compact {
   margin-top: 0;
   padding: 3px 8px;
-  font-size: 0.64rem;
+  font-size: var(--fs-xs);
   white-space: nowrap;
 }
 
@@ -575,7 +619,7 @@
 
 .ahp-crit-tab-name {
   max-width: 100%;
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   color: var(--lab-text);
   overflow: hidden;
@@ -586,9 +630,8 @@
 .ahp-crit-tab-meta {
   display: flex;
   gap: 6px;
-  font-size: 0.6rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.01em;
   color: var(--lab-muted);
   font-weight: 600;
 }
@@ -607,7 +650,7 @@
 }
 
 .ahp-eval-title {
-  font-size: 1rem;
+  font-size: var(--fs-base);
   font-weight: 700;
   display: flex;
   align-items: baseline;
@@ -616,7 +659,7 @@
 }
 
 .ahp-eval-weight {
-  font-size: 0.68rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--lab-accent);
 }
@@ -638,7 +681,7 @@
   background: transparent;
   color: var(--lab-muted);
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   cursor: pointer;
 }
@@ -675,7 +718,7 @@
 .ahp-data-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
 }
 
 .ahp-data-table th,
@@ -689,7 +732,7 @@
 .ahp-data-table th {
   background: var(--lab-panel-2);
   color: var(--lab-muted);
-  font-size: 0.62rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   letter-spacing: 0.04em;
 }
@@ -718,15 +761,14 @@
 }
 
 .ahp-th-sub {
-  font-size: 0.56rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.01em;
   opacity: 0.8;
   margin-top: 2px;
 }
 
 .ahp-td-raw {
-  font-size: 0.64rem;
+  font-size: var(--fs-xs);
   color: var(--lab-muted);
 }
 
@@ -755,12 +797,12 @@
 .ahp-num-input {
   width: 72px;
   padding: 6px 8px;
-  border: 1px solid var(--lab-border);
+  border: 1px solid var(--lab-border-strong);
   border-radius: 7px;
   background: var(--lab-bg);
   color: var(--lab-text);
   font-family: "DM Mono", monospace;
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   text-align: right;
   outline: none;
 }
@@ -789,20 +831,20 @@
   margin-top: 12px;
   padding: 10px 14px;
   border-radius: 8px;
-  background: #FFF0F3;
+  background: var(--color-danger-bg);
   border: 1px solid rgba(255, 59, 92, 0.35);
   color: var(--lab-danger);
-  font-size: 0.74rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
 .ahp-warning {
   padding: 12px 14px;
   border-radius: 8px;
-  background: #FFFBEB;
+  background: var(--color-warning-bg);
   border: 1px solid rgba(245, 158, 11, 0.45);
-  color: #92400E;
-  font-size: 0.74rem;
+  color: var(--color-warning-text);
+  font-size: var(--fs-sm);
   line-height: 1.5;
   margin-bottom: 14px;
 }
@@ -856,7 +898,7 @@
   border-radius: 4px;
   background: var(--lab-muted);
   color: #fff;
-  font-size: 0.6rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
 }
 
@@ -883,4 +925,29 @@
   .ahp-results-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Design refresh: nadpisy karet a popisky ── */
+.ahp-card-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  color: var(--lab-text);
+}
+
+.ahp-matrix-caption-hint {
+  font-weight: 400;
+}
+
+.ahp-weight-name {
+  width: 8.5rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: var(--lh-tight);
+}
+
+.ahp-weight-pct {
+  min-width: 3.5rem;
+  font-variant-numeric: tabular-nums;
 }
