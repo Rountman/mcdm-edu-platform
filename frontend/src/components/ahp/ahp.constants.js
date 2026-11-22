@@ -23,10 +23,11 @@ export const MAX_ALTS = 6;
 export { CR_THRESHOLD, RANDOM_INDEX } from '../../lib/mcdm/ahp';
 
 export const ALT_METHODS = [
-  { id: 'pairwise', label: 'Párově', hint: 'Saatyho škála mezi alternativami' },
-  { id: 'direct', label: 'Přímo', hint: 'Body 0–100 pro každou alternativu' },
-  { id: 'smart', label: 'SMART', hint: 'Skutečné hodnoty + benefit/cost' },
+  { id: 'pairwise', label: 'Párově', labelEn: 'Pairwise', hint: 'Saatyho škála mezi alternativami', hintEn: 'Saaty scale between alternatives' },
+  { id: 'direct', label: 'Přímo', labelEn: 'Direct', hint: 'Body 0–100 pro každou alternativu', hintEn: 'Points 0–100 for each alternative' },
+  { id: 'smart', label: 'SMART', labelEn: 'SMART', hint: 'Skutečné hodnoty + benefit/cost', hintEn: 'Actual values + benefit/cost' },
 ];
 export const DEFAULT_ALT_METHOD = 'pairwise';
 export const METHOD_LABELS = Object.fromEntries(ALT_METHODS.map((m) => [m.id, m.label]));
+export const METHOD_LABELS_EN = Object.fromEntries(ALT_METHODS.map((m) => [m.id, m.labelEn]));
 export const SUCCESS = tokens.success;

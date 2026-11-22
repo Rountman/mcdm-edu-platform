@@ -19,24 +19,26 @@ import {
 } from './ahp.model';
 import { downloadJson } from '../../utils/downloadJson';
 import { calculateAhpFull, McdmError } from '../../lib/mcdm/api';
+import { translateLibMessage, useLang } from '../../i18n/lang';
 
 const STEPS = [
-  'Kritéria a alternativy',
-  'Váhy kritérií',
-  'Hodnocení alternativ',
-  'Výsledky',
+  { cs: 'Kritéria a alternativy', en: 'Criteria and alternatives' },
+  { cs: 'Váhy kritérií', en: 'Criteria weights' },
+  { cs: 'Hodnocení alternativ', en: 'Rating alternatives' },
+  { cs: 'Výsledky', en: 'Results' },
 ];
 
 function IssueList({ issues, onGoTo }) {
+  const { lang, tr } = useLang();
   if (issues.length === 0) return null;
   return (
     <div className="ahp-warning" role="status">
-      <strong>Výpočet zatím nelze spustit:</strong>
+      <strong>{tr('Výpočet zatím nelze spustit:', 'The calculation cannot run yet:')}</strong>
       <ul className="ahp-issue-list">
         {issues.map((issue, k) => (
           <li key={k}>
             <button type="button" className="ahp-link-btn" onClick={() => onGoTo(issue.step, issue.criterion)}>
-              {issue.message}
+              {lang === 'en' ? issue.messageEn ?? issue.message : issue.message}
             </button>
           </li>
         ))}
@@ -46,6 +48,7 @@ function IssueList({ issues, onGoTo }) {
 }
 
 export default function AHPInputTable() {
+  const { lang, tr } = useLang();
   const [model, setModel] = useState(createInitialModel);
   const [step, setStep] = useState(0);
   const [activeCrit, setActiveCrit] = useState(0);
@@ -98,7 +101,7 @@ export default function AHPInputTable() {
       setStep(3);
     } catch (err) {
       if (rev === revision.current) {
-        setApiError(err instanceof McdmError ? err.detail : 'Výpočet se nezdařil kvůli neočekávané chybě.');
+        setApiError(err instanceof McdmError ? err.detail : 'Výpočet se nezdařil kvůli neočekávané chybě.'); // přeloženo při zobrazení
       }
       if (!(err instanceof McdmError)) console.error(err);
     } finally {
@@ -123,7 +126,9 @@ export default function AHPInputTable() {
         setStep(0);
         setImportError(null);
       } catch (err) {
-        setImportError(err instanceof SyntaxError ? 'Soubor není platný JSON.' : err.message);
+        setImportError(err instanceof SyntaxError
+          ? { cs: 'Soubor není platný JSON.', en: 'The file is not valid JSON.' }
+          : { cs: err.message, en: err.en ?? err.message });
       }
     };
     reader.readAsText(file);
@@ -139,14 +144,14 @@ export default function AHPInputTable() {
   const calcBlock = (
     <div className="ahp-calc-block">
       <IssueList issues={issues} onGoTo={goTo} />
-      {apiError && <div className="ahp-error" role="alert">{apiError}</div>}
+      {apiError && <div className="ahp-error" role="alert">{translateLibMessage(apiError, lang)}</div>}
       <button
         type="button"
         className="ahp-calc-btn"
         onClick={handleCalc}
         disabled={loading || issues.length > 0}
       >
-        {loading ? 'Počítám...' : 'Vypočítat výsledné pořadí'}
+        {loading ? tr('Počítám…', 'Calculating…') : tr('Vypočítat výsledné pořadí', 'Calculate final ranking')}
       </button>
     </div>
   );
@@ -163,18 +168,18 @@ export default function AHPInputTable() {
         />
         <button type="button" className="ahp-toolbar-btn" onClick={() => fileInputRef.current?.click()}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-          Načíst data
+          {tr('Načíst data', 'Load data')}
         </button>
         <button type="button" className="ahp-toolbar-btn ahp-toolbar-btn--primary" onClick={handleExport}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-          Uložit data
+          {tr('Uložit data', 'Save data')}
         </button>
         {importError && (
-          <span className="ahp-toolbar-error" role="alert">{importError}</span>
+          <span className="ahp-toolbar-error" role="alert">{importError[lang]}</span>
         )}
       </div>
 
-      <nav className="ahp-stepper" aria-label="Kroky AHP">
+      <nav className="ahp-stepper" aria-label={tr('Kroky AHP', 'AHP steps')}>
         {STEPS.map((label, s) => (
           <button
             key={s}
@@ -184,15 +189,15 @@ export default function AHPInputTable() {
             onClick={() => setStep(s)}
           >
             <span className="ahp-step-badge">{s + 1}</span>
-            <span className="ahp-stepper-label">{label}</span>
+            <span className="ahp-stepper-label">{label[lang]}</span>
             {stepWarn[s] && (
-              <span className="ahp-stepper-warn" title="Vyžaduje pozornost">
-                <span aria-hidden="true">!</span><span className="u-visually-hidden"> (vyžaduje pozornost)</span>
+              <span className="ahp-stepper-warn" title={tr('Vyžaduje pozornost', 'Needs attention')}>
+                <span aria-hidden="true">!</span><span className="u-visually-hidden"> ({tr('vyžaduje pozornost', 'needs attention')})</span>
               </span>
             )}
             {s === 3 && results && (
-              <span className="ahp-stepper-ok" title="Spočteno">
-                <span aria-hidden="true">✓</span><span className="u-visually-hidden"> (spočteno)</span>
+              <span className="ahp-stepper-ok" title={tr('Spočteno', 'Calculated')}>
+                <span aria-hidden="true">✓</span><span className="u-visually-hidden"> ({tr('spočteno', 'calculated')})</span>
               </span>
             )}
           </button>
@@ -201,7 +206,7 @@ export default function AHPInputTable() {
 
       <h2 className="ahp-step-tag">
         <span className="ahp-step-badge" aria-hidden="true">{step + 1}</span>
-        <span><span className="u-visually-hidden">Krok {step + 1}: </span>{STEPS[step]}</span>
+        <span><span className="u-visually-hidden">{tr('Krok', 'Step')} {step + 1}: </span>{STEPS[step][lang]}</span>
       </h2>
 
       {step === 0 && (
@@ -219,7 +224,7 @@ export default function AHPInputTable() {
         <PairwiseEditor
           names={critNames}
           matrix={model.critMatrix}
-          priorityLabel="Váhy kritérií"
+          priorityLabel={tr('Váhy kritérií', 'Criteria weights')}
           onChange={(i, j, v) => update((m) => ({ ...m, critMatrix: setReciprocal(m.critMatrix, i, j, v) }))}
         />
       )}
@@ -255,7 +260,7 @@ export default function AHPInputTable() {
         ) : (
           <>
             <div className="ahp-placeholder">
-              Výsledky zatím nejsou spočtené. Spusťte výpočet tlačítkem níže.
+              {tr('Výsledky zatím nejsou spočtené. Spusťte výpočet tlačítkem níže.', 'Results have not been calculated yet. Run the calculation with the button below.')}
             </div>
             {calcBlock}
           </>
@@ -264,11 +269,11 @@ export default function AHPInputTable() {
 
       <div className="ahp-step-nav">
         <button type="button" className="ahp-toolbar-btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
-          ← Zpět
+          ← {tr('Zpět', 'Back')}
         </button>
         {step < STEPS.length - 1 && (
           <button type="button" className="ahp-toolbar-btn ahp-toolbar-btn--primary" onClick={() => setStep(step + 1)}>
-            Další krok: {STEPS[step + 1]} →
+            {tr('Další krok', 'Next step')}: {STEPS[step + 1][lang]} →
           </button>
         )}
       </div>

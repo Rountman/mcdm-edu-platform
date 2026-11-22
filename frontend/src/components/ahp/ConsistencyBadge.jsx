@@ -1,11 +1,13 @@
 import { DANGER, SUCCESS } from './ahp.constants';
 import { fmt } from './ahp.math';
+import { useLang } from '../../i18n/lang';
 
 export default function ConsistencyBadge({ cr, isConsistent, n, compact = false }) {
+  const { tr } = useLang();
   const color = isConsistent ? SUCCESS : DANGER;
   const note = n <= 2
-    ? 'Konzistentní (pro n ≤ 2 vždy)'
-    : isConsistent ? 'Konzistentní' : 'Nekonzistentní - upravte srovnání';
+    ? tr('Konzistentní (pro n ≤ 2 vždy)', 'Consistent (always for n ≤ 2)')
+    : isConsistent ? tr('Konzistentní', 'Consistent') : tr('Nekonzistentní – upravte srovnání', 'Inconsistent – adjust the comparisons');
   return (
     <div
       className={`ahp-cr-badge${compact ? ' ahp-cr-badge--compact' : ''}`}
@@ -20,7 +22,7 @@ export default function ConsistencyBadge({ cr, isConsistent, n, compact = false 
           ? <path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           : <path d="M8 2.5v7M8 12.5v.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />}
       </svg>
-      {compact ? (isConsistent ? 'Konzistentní' : 'Nekonzistentní') : <>CR = {fmt(cr)} - {note}</>}
+      {compact ? (isConsistent ? tr('Konzistentní', 'Consistent') : tr('Nekonzistentní', 'Inconsistent')) : <>CR = {fmt(cr)} – {note}</>}
     </div>
   );
 }

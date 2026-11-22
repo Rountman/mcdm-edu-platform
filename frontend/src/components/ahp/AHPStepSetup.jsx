@@ -1,14 +1,16 @@
 import { MAX_ALTS, MAX_CRIT, MIN_ALTS, MIN_CRIT } from './ahp.constants';
+import { useLang } from '../../i18n/lang';
 
 const range = (min, max) => Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
 function NameGrid({ names, prefix, onChange }) {
+  const { tr } = useLang();
   return (
     <div className="ahp-name-grid">
       {names.map((name, i) => (
         <div key={i}>
           <label className="ahp-field-label" htmlFor={`${prefix}-${i}`} style={{ display: 'block' }}>
-            {prefix === 'crit' ? 'Kritérium' : 'Alternativa'} {i + 1}
+            {prefix === 'crit' ? tr('Kritérium', 'Criterion') : tr('Alternativa', 'Alternative')} {i + 1}
           </label>
           <input
             id={`${prefix}-${i}`}
@@ -23,13 +25,14 @@ function NameGrid({ names, prefix, onChange }) {
 }
 
 export default function AHPStepSetup({ critNames, altNames, onCritCount, onAltCount, onCritName, onAltName }) {
+  const { tr } = useLang();
   return (
     <>
       <div className="ahp-card">
-        <h3 className="ahp-card-title">Kritéria</h3>
+        <h3 className="ahp-card-title">{tr('Kritéria', 'Criteria')}</h3>
         <div className="ahp-config-row">
           <div>
-            <label className="ahp-field-label" htmlFor="ahp-n-crit" style={{ display: 'block' }}>Počet kritérií</label>
+            <label className="ahp-field-label" htmlFor="ahp-n-crit" style={{ display: 'block' }}>{tr('Počet kritérií', 'Number of criteria')}</label>
             <select
               id="ahp-n-crit"
               className="ahp-select"
@@ -44,10 +47,10 @@ export default function AHPStepSetup({ critNames, altNames, onCritCount, onAltCo
       </div>
 
       <div className="ahp-card">
-        <h3 className="ahp-card-title">Alternativy</h3>
+        <h3 className="ahp-card-title">{tr('Alternativy', 'Alternatives')}</h3>
         <div className="ahp-config-row">
           <div>
-            <label className="ahp-field-label" htmlFor="ahp-n-alts" style={{ display: 'block' }}>Počet alternativ</label>
+            <label className="ahp-field-label" htmlFor="ahp-n-alts" style={{ display: 'block' }}>{tr('Počet alternativ', 'Number of alternatives')}</label>
             <select
               id="ahp-n-alts"
               className="ahp-select"

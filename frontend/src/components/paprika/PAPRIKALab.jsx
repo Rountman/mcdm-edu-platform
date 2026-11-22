@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import './PAPRIKALab.css';
 import PAPRIKAResults from './PAPRIKAResults';
 import { calculatePaprika, McdmError } from '../../lib/mcdm/api';
+import { translateLibMessage, useLang } from '../../i18n/lang';
 
 const MAX_CRIT = 6;
 const MAX_ALTS = 5;
@@ -14,6 +15,7 @@ function makeRatings(nAlts, nCrit) {
 }
 
 export default function PAPRIKALab() {
+  const { lang, tr } = useLang();
   const [nCrit, setNCrit]   = useState(3);
   const [nAlts, setNAlts]   = useState(3);
   const [critNames, setCritNames] = useState(DEFAULT_CRIT_NAMES);
@@ -98,10 +100,10 @@ export default function PAPRIKALab() {
     reader.onload = (ev) => {
       try {
         const d = JSON.parse(ev.target.result);
-        if (d.method !== 'PAPRIKA') throw new Error('Soubor není PAPRIKA session.');
+        if (d.method !== 'PAPRIKA') throw Object.assign(new Error('Soubor není PAPRIKA session.'), { en: 'The file is not a PAPRIKA session.' });
         const { nCrit: nc, nAlts: na, criteriaNames: cn, altNames: an, ratings: r, comparisons: c } = d;
-        if (!Number.isInteger(nc) || nc < 2 || nc > MAX_CRIT) throw new Error('Neplatný počet kritérií.');
-        if (!Number.isInteger(na) || na < 2 || na > MAX_ALTS) throw new Error('Neplatný počet alternativ.');
+        if (!Number.isInteger(nc) || nc < 2 || nc > MAX_CRIT) throw Object.assign(new Error('Neplatný počet kritérií.'), { en: 'Invalid number of criteria.' });
+        if (!Number.isInteger(na) || na < 2 || na > MAX_ALTS) throw Object.assign(new Error('Neplatný počet alternativ.'), { en: 'Invalid number of alternatives.' });
         setNCrit(nc); setNAlts(na);
         setCritNames(cn.concat(DEFAULT_CRIT_NAMES.slice(cn.length)));
         setAltNames(an.concat(DEFAULT_ALT_NAMES.slice(an.length)));
@@ -110,7 +112,11 @@ export default function PAPRIKALab() {
         setRatings(fullRatings);
         setComparisons(c || {});
         setResults(null); setImportError(null);
-      } catch (err) { setImportError(err.message); }
+      } catch (err) {
+        setImportError(err instanceof SyntaxError
+          ? { cs: 'Soubor není platný JSON.', en: 'The file is not valid JSON.' }
+          : { cs: err.message, en: err.en ?? err.message });
+      }
     };
     reader.readAsText(file);
   };
@@ -124,31 +130,31 @@ export default function PAPRIKALab() {
         <input ref={fileRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportFile} />
         <button type="button" className="pap-tbtn" onClick={() => fileRef.current?.click()}>
           <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-          Načíst data
+          {tr('Načíst data', 'Load data')}
         </button>
         <button type="button" className="pap-tbtn pap-tbtn--primary" onClick={handleExport}>
           <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-          Uložit data
+          {tr('Uložit data', 'Save data')}
         </button>
-        {importError && <span className="pap-tbtn-error" role="alert">{importError}</span>}
+        {importError && <span className="pap-tbtn-error" role="alert">{importError[lang]}</span>}
       </div>
 
       {/* Step 1 – Setup */}
       <section className="pap-card" aria-labelledby="pap-step1">
         <h2 className="pap-step-tag" id="pap-step1">
           <span className="pap-step-badge" aria-hidden="true">1</span>
-          Definice kritérií a alternativ
+          {tr('Definice kritérií a alternativ', 'Criteria and alternatives')}
         </h2>
         <div className="pap-config-row">
           <div>
-            <label className="pap-field-label" htmlFor="pap-n-crit">Počet kritérií</label>
+            <label className="pap-field-label" htmlFor="pap-n-crit">{tr('Počet kritérií', 'Number of criteria')}</label>
             <select id="pap-n-crit" className="pap-select" value={nCrit}
               onChange={e => { setNCrit(Number(e.target.value)); setComparisons({}); setResults(null); }}>
               {[2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <div>
-            <label className="pap-field-label" htmlFor="pap-n-alts">Počet alternativ</label>
+            <label className="pap-field-label" htmlFor="pap-n-alts">{tr('Počet alternativ', 'Number of alternatives')}</label>
             <select id="pap-n-alts" className="pap-select" value={nAlts}
               onChange={e => { setNAlts(Number(e.target.value)); setResults(null); }}>
               {[2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
@@ -158,11 +164,11 @@ export default function PAPRIKALab() {
 
         <div className="pap-names-row">
           <fieldset>
-            <legend className="pap-field-label">Názvy kritérií</legend>
+            <legend className="pap-field-label">{tr('Názvy kritérií', 'Criteria names')}</legend>
             <div className="pap-name-grid">
               {cNames.map((name, j) => (
                 <input key={j} className="pap-name-input" value={name}
-                  aria-label={`Název kritéria ${j + 1}`}
+                  aria-label={tr(`Název kritéria ${j + 1}`, `Criterion name ${j + 1}`)}
                   onChange={e => {
                     const next = [...critNames]; next[j] = e.target.value;
                     setCritNames(next); setResults(null);
@@ -171,11 +177,11 @@ export default function PAPRIKALab() {
             </div>
           </fieldset>
           <fieldset>
-            <legend className="pap-field-label">Názvy alternativ</legend>
+            <legend className="pap-field-label">{tr('Názvy alternativ', 'Alternative names')}</legend>
             <div className="pap-name-grid">
               {aNames.map((name, ai) => (
                 <input key={ai} className="pap-name-input" value={name}
-                  aria-label={`Název alternativy ${ai + 1}`}
+                  aria-label={tr(`Název alternativy ${ai + 1}`, `Alternative name ${ai + 1}`)}
                   onChange={e => {
                     const next = [...altNames]; next[ai] = e.target.value;
                     setAltNames(next); setResults(null);
@@ -190,14 +196,14 @@ export default function PAPRIKALab() {
       <section className="pap-card" aria-labelledby="pap-step2">
         <h2 className="pap-step-tag" id="pap-step2">
           <span className="pap-step-badge" aria-hidden="true">2</span>
-          Hodnocení alternativ
-          <span className="pap-step-note">škála 1–10</span>
+          {tr('Hodnocení alternativ', 'Rating alternatives')}
+          <span className="pap-step-note">{tr('škála 1–10', 'scale 1–10')}</span>
         </h2>
         <div className="pap-table-wrap">
           <table className="pap-table">
             <thead>
               <tr>
-                <th scope="col" className="pap-th-empty">Alternativa</th>
+                <th scope="col" className="pap-th-empty">{tr('Alternativa', 'Alternative')}</th>
                 {cNames.map((cn, j) => <th key={j} scope="col" className="pap-th">{cn}</th>)}
               </tr>
             </thead>
@@ -210,7 +216,7 @@ export default function PAPRIKALab() {
                       <input
                         type="number" min={1} max={10} step={1}
                         className="pap-rating-input"
-                        aria-label={`Hodnocení ${an} podle ${cn}`}
+                        aria-label={tr(`Hodnocení ${an} podle ${cn}`, `Rating of ${an} on ${cn}`)}
                         value={ratings[ai][j]}
                         onChange={e => { setRating(ai, j, e.target.value); setResults(null); }}
                       />
@@ -227,18 +233,20 @@ export default function PAPRIKALab() {
       <section className="pap-card" aria-labelledby="pap-step3">
         <h2 className="pap-step-tag" id="pap-step3">
           <span className="pap-step-badge" aria-hidden="true">3</span>
-          Párová srovnání kritérií (kompromisy)
+          {tr('Párová srovnání kritérií (kompromisy)', 'Pairwise comparisons of criteria (trade-offs)')}
         </h2>
         <p className="pap-comp-intro">
-          U každé dvojice vyberte variantu, kterou byste preferoval/a. Varianta má na jednom kritériu
-          nejlepší hodnotu (10/10) a na druhém nejhorší (1/10), ostatní kritéria jsou na střední hodnotě.
+          {tr(
+            'U každé dvojice vyberte variantu, kterou byste preferoval/a. Varianta má na jednom kritériu nejlepší hodnotu (10/10) a na druhém nejhorší (1/10), ostatní kritéria jsou na střední hodnotě.',
+            'For each pair, choose the option you would prefer. Each option has the best value (10/10) on one criterion and the worst (1/10) on the other; all other criteria are at a middle value.',
+          )}
         </p>
         <div className="pap-progress">
           <div className="pap-progress-track" aria-hidden="true">
             <div className="pap-progress-bar" style={{ width: `${pairs.length ? (answeredCount / pairs.length) * 100 : 0}%` }} />
           </div>
           <span className="pap-progress-text" role="status">
-            Zodpovězeno {answeredCount} z {pairs.length}
+            {tr('Zodpovězeno', 'Answered')} {answeredCount} {tr('z', 'of')} {pairs.length}
           </span>
         </div>
         <div className="pap-comp-grid">
@@ -257,7 +265,7 @@ export default function PAPRIKALab() {
                     <svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </span>
                 )}
-                <span className="pap-choice-header">Přednost {cNames[w]}</span>
+                <span className="pap-choice-header">{tr('Přednost', 'Prefer')} {cNames[w]}</span>
                 <span className="pap-choice-vals">
                   <span className="pap-choice-hi">{cNames[hi]}: 10/10</span>
                   <span className="pap-choice-lo">{cNames[lo]}: 1/10</span>
@@ -287,26 +295,26 @@ export default function PAPRIKALab() {
           disabled={loading || !allAnswered}
           aria-describedby={!allAnswered ? 'pap-calc-hint' : undefined}
         >
-          {loading ? 'Počítám…' : 'Vypočítat pořadí'}
+          {loading ? tr('Počítám…', 'Calculating…') : tr('Vypočítat pořadí', 'Calculate ranking')}
         </button>
         {!allAnswered && (
           <p id="pap-calc-hint" className="u-alert u-alert--warning pap-warn">
-            V kroku 3 zbývá zodpovědět srovnání: {remaining}.
+            {tr('V kroku 3 zbývá zodpovědět srovnání', 'Comparisons left to answer in step 3')}: {remaining}.
           </p>
         )}
-        {calcError && <p className="pap-tbtn-error" role="alert">{calcError}</p>}
+        {calcError && <p className="pap-tbtn-error" role="alert">{translateLibMessage(calcError, lang)}</p>}
       </div>
 
       <section aria-labelledby="pap-step4" aria-live="polite">
         <h2 className="pap-step-tag" id="pap-step4">
           <span className="pap-step-badge" aria-hidden="true">4</span>
-          Výsledky
+          {tr('Výsledky', 'Results')}
         </h2>
         {results ? (
           <PAPRIKAResults results={results} criteriaNames={cNames} altNames={aNames} />
         ) : (
           <div className="u-placeholder">
-            Výsledky zatím nejsou spočtené. Zodpovězte všechna srovnání a stiskněte „Vypočítat pořadí“.
+            {tr('Výsledky zatím nejsou spočtené. Zodpovězte všechna srovnání a stiskněte „Vypočítat pořadí“.', 'Results have not been calculated yet. Answer all comparisons and press “Calculate ranking”.')}
           </div>
         )}
       </section>

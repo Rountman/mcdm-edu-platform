@@ -1,5 +1,6 @@
 import { useRef, useState, useMemo } from 'react';
 import './DecisionTreeLab.css';
+import { useLang } from '../../i18n/lang';
 
 // ── Layout constants ───────────────────────────────────────
 const DEPTH_W = 200;
@@ -27,6 +28,23 @@ const INITIAL_TREE = {
   ],
   nextId: 5,
 };
+
+// Stejný ukázkový strom v angličtině (struktura i hodnoty shodné)
+const INITIAL_TREE_EN = {
+  ...INITIAL_TREE,
+  nodes: {
+    n0: { ...INITIAL_TREE.nodes.n0, label: 'Decision' },
+    n1: { ...INITIAL_TREE.nodes.n1, label: 'Market' },
+    n2: { ...INITIAL_TREE.nodes.n2, label: 'Profit' },
+    n3: { ...INITIAL_TREE.nodes.n3, label: 'Loss' },
+    n4: { ...INITIAL_TREE.nodes.n4, label: 'Status quo' },
+  },
+  edges: INITIAL_TREE.edges.map((e) => ({
+    ...e,
+    label: { e0: 'Invest', e1: 'Do not invest', e2: 'Favourable', e3: 'Unfavourable' }[e.id],
+  })),
+};
+const initialTree = (lang) => (lang === 'en' ? INITIAL_TREE_EN : INITIAL_TREE);
 
 // ── Pure helpers ───────────────────────────────────────────
 
@@ -136,9 +154,14 @@ function edgePath(x1, y1, x2, y2) {
 function nodeExit(p, type)  { return type === 'chance' ? { x: p.cx + CR, y: p.cy } : { x: p.cx + NODE_W / 2, y: p.cy }; }
 function nodeEnter(p, type) { return type === 'chance' ? { x: p.cx - CR, y: p.cy } : { x: p.cx - NODE_W / 2, y: p.cy }; }
 
-function fmtVal(v) {
+function fmtVal(v, lang = 'cs') {
   if (v == null) return '—';
   const abs = Math.abs(v);
+  if (lang === 'en') {
+    if (abs >= 1e6) return `${(v / 1e6).toFixed(2)}M CZK`;
+    if (abs >= 1e3) return `${(v / 1e3).toFixed(0)}k CZK`;
+    return `${v} CZK`;
+  }
   if (abs >= 1e6) return `${(v / 1e6).toFixed(2)} M Kč`;
   if (abs >= 1e3) return `${(v / 1e3).toFixed(0)} tis. Kč`;
   return `${v} Kč`;
@@ -147,7 +170,15 @@ function fmtVal(v) {
 // ── Component ──────────────────────────────────────────────
 
 export default function DecisionTreeLab() {
-  const [tree, setTree]       = useState(INITIAL_TREE);
+  const { lang, tr } = useLang();
+  const fmt = (v) => fmtVal(v, lang);
+  const [tree, setTree]       = useState(() => initialTree(lang));
+  // Neupravený ukázkový strom se přepne s jazykem; strom upravený studentem zůstane beze změny
+  const [treeLang, setTreeLang] = useState(lang);
+  if (treeLang !== lang) {
+    setTreeLang(lang);
+    if (tree === INITIAL_TREE || tree === INITIAL_TREE_EN) setTree(initialTree(lang));
+  }
   const [sel, setSel]         = useState(null);
   const [selKind, setSelKind] = useState(null); // 'node' | 'edge'
 
@@ -184,7 +215,11 @@ export default function DecisionTreeLab() {
   const keyPick = (id, kind) => (ev) => {
     if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(id, kind, ev); }
   };
-  const TYPE_NAMES = { decision: 'Rozhodovací uzel', chance: 'Náhodový uzel', terminal: 'Terminální uzel' };
+  const TYPE_NAMES = {
+    decision: tr('Rozhodovací uzel', 'Decision node'),
+    chance: tr('Náhodový uzel', 'Chance node'),
+    terminal: tr('Terminální uzel', 'Terminal node'),
+  };
 
   function updNode(id, patch) {
     setTree(t => ({ ...t, nodes: { ...t.nodes, [id]: { ...t.nodes[id], ...patch } } }));
@@ -199,9 +234,9 @@ export default function DecisionTreeLab() {
     const nid = `n${tree.nextId}`, eid = `e${tree.nextId}`;
     setTree(t => ({
       ...t,
-      nodes: { ...t.nodes, [nid]: { type: 'terminal', label: `Uzel ${t.nextId}`, value: 0 } },
+      nodes: { ...t.nodes, [nid]: { type: 'terminal', label: `${tr('Uzel', 'Node')} ${t.nextId}`, value: 0 } },
       edges: [...t.edges, {
-        id: eid, from: parentId, to: nid, label: `Větev ${t.nextId}`,
+        id: eid, from: parentId, to: nid, label: `${tr('Větev', 'Branch')} ${t.nextId}`,
         ...(parent.type === 'chance' ? { prob: 0.1 } : {}),
       }],
       nextId: t.nextId + 1,
@@ -248,19 +283,22 @@ export default function DecisionTreeLab() {
 
       {/* Toolbar */}
       <div className="dtl-toolbar">
-        <span className="dtl-toolbar-title">Interaktivní stavba stromu</span>
+        <span className="dtl-toolbar-title">{tr('Interaktivní stavba stromu', 'Interactive tree builder')}</span>
         <div className="dtl-toolbar-legend">
-          <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--dec" />Rozhodovací □</span>
-          <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--chance" />Náhodový ○</span>
-          <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--term" />Terminální</span>
+          <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--dec" />{tr('Rozhodovací', 'Decision')} □</span>
+          <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--chance" />{tr('Náhodový', 'Chance')} ○</span>
+          <span className="dtl-legend-item"><span className="dtl-ldot dtl-ldot--term" />{tr('Terminální', 'Terminal')}</span>
         </div>
-        <button type="button" className="dtl-btn dtl-btn--ghost" onClick={() => { setTree(INITIAL_TREE); deselect(); }}>↺ Reset</button>
+        <button type="button" className="dtl-btn dtl-btn--ghost" onClick={() => { setTree(initialTree(lang)); deselect(); }}>↺ {tr('Obnovit', 'Reset')}</button>
       </div>
 
       {/* SVG tree with inline popovers */}
       <div className="dtl-card">
-        <h2 className="dtl-step-tag"><span className="dtl-badge-n" aria-hidden="true">1</span>Strom</h2>
-        <p className="dtl-hint">Uzel nebo větev upravíte kliknutím, případně klávesou Tab a Enter. Escape úpravu zavře.</p>
+        <h2 className="dtl-step-tag"><span className="dtl-badge-n" aria-hidden="true">1</span>{tr('Strom', 'Tree')}</h2>
+        <p className="dtl-hint" data-scroll-hint={tr(' Strom lze posouvat do stran.', ' The tree can be scrolled sideways.')}>{tr(
+          'Uzel nebo větev upravíte kliknutím, případně klávesou Tab a Enter. Escape úpravu zavře.',
+          'Edit a node or branch by clicking it, or with Tab and Enter. Escape closes the editor.',
+        )}</p>
 
         {/* Aspect-ratio container so absolute popovers align with SVG nodes */}
         <div className="dtl-tree-scroll">
@@ -285,7 +323,10 @@ export default function DecisionTreeLab() {
               const mx    = (s.x + d.x) / 2, my = (s.y + d.y) / 2;
               return (
                 <g key={e.id} className="dtl-hit" role="button" tabIndex={0}
-                  aria-label={`Větev ${e.label}${e.prob != null ? `, pravděpodobnost ${e.prob}` : ''}${isOpt ? ', optimální' : ''}. Upravit.`}
+                  aria-label={tr(
+                    `Větev ${e.label}${e.prob != null ? `, pravděpodobnost ${e.prob}` : ''}${isOpt ? ', optimální' : ''}. Upravit.`,
+                    `Branch ${e.label}${e.prob != null ? `, probability ${e.prob}` : ''}${isOpt ? ', optimal' : ''}. Edit.`,
+                  )}
                   onClick={ev => pick(e.id, 'edge', ev)} onKeyDown={keyPick(e.id, 'edge')} style={{ cursor: 'pointer' }}>
                   <path d={path} fill="none" stroke={isSel ? '#0057FF' : isOpt ? '#0057FF' : '#8A94A6'} strokeWidth={isSel ? 3.5 : isOpt ? 3 : 1.5} strokeDasharray={isOpt || isSel ? undefined : '5 4'} />
                   <path d={path} fill="none" stroke="transparent" strokeWidth={14} />
@@ -305,12 +346,12 @@ export default function DecisionTreeLab() {
 
               if (node.type === 'chance') return (
                 <g key={id} className="dtl-hit" role="button" tabIndex={0}
-                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, hodnota ${fmtVal(node.value)}` : ev_val != null ? `, EMV ${fmtVal(ev_val)}` : ''}. Upravit.`}
+                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, ${tr('hodnota', 'value')} ${fmt(node.value)}` : ev_val != null ? `, EMV ${fmt(ev_val)}` : ''}. ${tr('Upravit', 'Edit')}.`}
                   onClick={ev => pick(id, 'node', ev)} onKeyDown={keyPick(id, 'node')} style={{ cursor: 'pointer' }}>
                   <circle cx={p.cx} cy={p.cy} r={CR + (isSel ? 3 : 0)}
                     fill={isSel ? '#FEF3C7' : '#FFFBEB'} stroke="#B45309" strokeWidth={isSel ? 2.5 : 1.5} />
                   <text x={p.cx} y={p.cy - 4} textAnchor="middle" fontSize="10" fill="#92400E" fontWeight="700">{node.label}</text>
-                  {ev_val != null && <text x={p.cx} y={p.cy + 11} textAnchor="middle" fontSize="9.5" fill="#92400E" fontWeight="700">{fmtVal(ev_val)}</text>}
+                  {ev_val != null && <text x={p.cx} y={p.cy + 11} textAnchor="middle" fontSize="9.5" fill="#92400E" fontWeight="700">{fmt(ev_val)}</text>}
                 </g>
               );
 
@@ -318,13 +359,13 @@ export default function DecisionTreeLab() {
                 const pos_val = (node.value ?? 0) >= 0;
                 return (
                   <g key={id} className="dtl-hit" role="button" tabIndex={0}
-                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, hodnota ${fmtVal(node.value)}` : ev_val != null ? `, EMV ${fmtVal(ev_val)}` : ''}. Upravit.`}
+                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, ${tr('hodnota', 'value')} ${fmt(node.value)}` : ev_val != null ? `, EMV ${fmt(ev_val)}` : ''}. ${tr('Upravit', 'Edit')}.`}
                   onClick={ev => pick(id, 'node', ev)} onKeyDown={keyPick(id, 'node')} style={{ cursor: 'pointer' }}>
                     <rect x={p.cx - NODE_W / 2} y={p.cy - NODE_H / 2} width={NODE_W} height={NODE_H} rx={7}
                       fill={isSel ? (pos_val ? '#DCFCE7' : '#FEE2E2') : (pos_val ? '#ECFDF5' : '#FFF5F5')}
                       stroke={pos_val ? '#047857' : '#C8102E'} strokeWidth={isSel ? 2.5 : 1.5} />
                     <text x={p.cx} y={p.cy - 5} textAnchor="middle" fontSize="10" fill={pos_val ? '#065F46' : '#991B1B'} fontWeight="600">{node.label}</text>
-                    <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9.5" fill={pos_val ? '#047857' : '#C8102E'} fontWeight="700">{fmtVal(node.value)}</text>
+                    <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9.5" fill={pos_val ? '#047857' : '#C8102E'} fontWeight="700">{fmt(node.value)}</text>
                   </g>
                 );
               }
@@ -332,12 +373,12 @@ export default function DecisionTreeLab() {
               // decision
               return (
                 <g key={id} className="dtl-hit" role="button" tabIndex={0}
-                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, hodnota ${fmtVal(node.value)}` : ev_val != null ? `, EMV ${fmtVal(ev_val)}` : ''}. Upravit.`}
+                  aria-label={`${TYPE_NAMES[node.type]} ${node.label}${node.type === 'terminal' ? `, ${tr('hodnota', 'value')} ${fmt(node.value)}` : ev_val != null ? `, EMV ${fmt(ev_val)}` : ''}. ${tr('Upravit', 'Edit')}.`}
                   onClick={ev => pick(id, 'node', ev)} onKeyDown={keyPick(id, 'node')} style={{ cursor: 'pointer' }}>
                   <rect x={p.cx - NODE_W / 2} y={p.cy - NODE_H / 2} width={NODE_W} height={NODE_H} rx={7}
                     fill={isSel ? '#DBEAFE' : '#EFF6FF'} stroke={isSel ? '#0057FF' : '#5B8DEF'} strokeWidth={isSel ? 2.5 : 1.5} />
                   <text x={p.cx} y={p.cy - 5} textAnchor="middle" fontSize="10" fill="#1E40AF" fontWeight="700">{node.label}</text>
-                  {ev_val != null && <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9.5" fill="#0046CC" fontWeight="700">{fmtVal(ev_val)}</text>}
+                  {ev_val != null && <text x={p.cx} y={p.cy + 9} textAnchor="middle" fontSize="9.5" fill="#0046CC" fontWeight="700">{fmt(ev_val)}</text>}
                 </g>
               );
             })}
@@ -347,7 +388,7 @@ export default function DecisionTreeLab() {
           {selNode && pos[sel] && (
             <div
               className="dtl-popover"
-              role="dialog" aria-label={`Úprava: ${selNode.label}`}
+              role="dialog" aria-label={`${tr('Úprava', 'Edit')}: ${selNode.label}`}
               style={{ left: pctX(pos[sel].cx), top: pctY(pos[sel].cy), transform: popoverTransform(pos[sel].cy) }}
               onClick={e => e.stopPropagation()}
               onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closePopover(); } }}
@@ -357,20 +398,20 @@ export default function DecisionTreeLab() {
                   {selNode.type === 'decision' ? '□' : selNode.type === 'chance' ? '○' : '◼'}
                 </span>
                 <span className="dtl-popover-title">
-                  {selNode.type === 'decision' ? 'Rozhodovací uzel' : selNode.type === 'chance' ? 'Náhodový uzel' : 'Terminální uzel'}
+                  {TYPE_NAMES[selNode.type]}
                 </span>
-                <button type="button" className="dtl-popover-close" aria-label="Zavřít" onClick={closePopover}>✕</button>
+                <button type="button" className="dtl-popover-close" aria-label={tr('Zavřít', 'Close')} onClick={closePopover}>✕</button>
               </div>
 
               <div className="dtl-popover-field">
-                <label className="dtl-popover-label" htmlFor="dtl-node-name">Název</label>
+                <label className="dtl-popover-label" htmlFor="dtl-node-name">{tr('Název', 'Name')}</label>
                 <input id="dtl-node-name" className="dtl-popover-input" value={selNode.label} autoFocus
                   onChange={e => updNode(sel, { label: e.target.value })} />
               </div>
 
               {selNode.type === 'terminal' && (
                 <div className="dtl-popover-field">
-                  <label className="dtl-popover-label" htmlFor="dtl-node-value">Hodnota (Kč)</label>
+                  <label className="dtl-popover-label" htmlFor="dtl-node-value">{tr('Hodnota (Kč)', 'Value (CZK)')}</label>
                   <input id="dtl-node-value" type="number" className="dtl-popover-input dtl-popover-input--mono"
                     value={selNode.value ?? 0}
                     onChange={e => updNode(sel, { value: Number(e.target.value) })} />
@@ -379,7 +420,7 @@ export default function DecisionTreeLab() {
 
               {!isRoot && (
                 <div className="dtl-popover-types" role="group" aria-label="Typ uzlu">
-                  {[['decision', '□', 'Rozh.'], ['chance', '○', 'Náhoda'], ['terminal', '◼', 'Terminál']].map(([t, icon, label]) => (
+                  {[['decision', '□', tr('Rozh.', 'Decision')], ['chance', '○', tr('Náhoda', 'Chance')], ['terminal', '◼', tr('Terminál', 'Terminal')]].map(([t, icon, label]) => (
                     <button type="button" key={t}
                       className={`dtl-chip dtl-chip--${t}${selNode.type === t ? ' dtl-chip--active' : ''}`}
                       aria-pressed={selNode.type === t}
@@ -392,10 +433,10 @@ export default function DecisionTreeLab() {
 
               <div className="dtl-popover-actions">
                 {selNode.type !== 'terminal' && (
-                  <button type="button" className="dtl-btn dtl-btn--primary dtl-btn--sm" onClick={() => addBranch(sel)}>+ Větev</button>
+                  <button type="button" className="dtl-btn dtl-btn--primary dtl-btn--sm" onClick={() => addBranch(sel)}>+ {tr('Větev', 'Branch')}</button>
                 )}
                 {!isRoot && (
-                  <button type="button" className="dtl-btn dtl-btn--danger dtl-btn--sm" onClick={() => delNode(sel)}>Odstranit</button>
+                  <button type="button" className="dtl-btn dtl-btn--danger dtl-btn--sm" onClick={() => delNode(sel)}>{tr('Odstranit', 'Delete')}</button>
                 )}
               </div>
             </div>
@@ -408,25 +449,25 @@ export default function DecisionTreeLab() {
             return (
               <div
                 className="dtl-popover dtl-popover--edge"
-                role="dialog" aria-label={`Úprava větve ${selEdge.label}`}
+                role="dialog" aria-label={`${tr('Úprava větve', 'Edit branch')} ${selEdge.label}`}
                 style={{ left: pctX(mid.mx), top: pctY(mid.my), transform: popoverTransform(mid.my) }}
                 onClick={e => e.stopPropagation()}
                 onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); closePopover(); } }}
               >
                 <div className="dtl-popover-header">
-                  <span className="dtl-popover-title">Hrana / větev</span>
-                  <button type="button" className="dtl-popover-close" aria-label="Zavřít" onClick={closePopover}>✕</button>
+                  <span className="dtl-popover-title">{tr('Hrana / větev', 'Edge / branch')}</span>
+                  <button type="button" className="dtl-popover-close" aria-label={tr('Zavřít', 'Close')} onClick={closePopover}>✕</button>
                 </div>
 
                 <div className="dtl-popover-field">
-                  <label className="dtl-popover-label" htmlFor="dtl-edge-name">Název větve</label>
+                  <label className="dtl-popover-label" htmlFor="dtl-edge-name">{tr('Název větve', 'Branch name')}</label>
                   <input id="dtl-edge-name" className="dtl-popover-input" value={selEdge.label} autoFocus
                     onChange={e => updEdge(sel, { label: e.target.value })} />
                 </div>
 
                 {selEdge.prob != null && (
                   <div className="dtl-popover-field">
-                    <label className="dtl-popover-label" htmlFor="dtl-edge-prob">Pravděpodobnost (0–1)</label>
+                    <label className="dtl-popover-label" htmlFor="dtl-edge-prob">{tr('Pravděpodobnost (0–1)', 'Probability (0–1)')}</label>
                     <input id="dtl-edge-prob" type="number" min={0} max={1} step={0.05} className="dtl-popover-input dtl-popover-input--mono"
                       value={selEdge.prob}
                       onChange={e => updEdge(sel, { prob: Number(e.target.value) })} />
@@ -444,7 +485,7 @@ export default function DecisionTreeLab() {
         <div className="dtl-card dtl-warn-panel" role="alert">
           {probWarns.map((w, i) => (
             <div key={i} className="dtl-warn-item">
-              ⚠ Uzel „{w.label}": součet pravděpodobností = <strong>{w.sum}</strong> (musí být 1.00)
+              ⚠ {tr('Uzel', 'Node')} „{w.label}“: {tr('součet pravděpodobností', 'sum of probabilities')} = <strong>{w.sum}</strong> ({tr('musí být 1.00', 'must be 1.00')})
             </div>
           ))}
         </div>
@@ -452,12 +493,12 @@ export default function DecisionTreeLab() {
 
       {/* Results */}
       <div className="dtl-card">
-        <h2 className="dtl-step-tag"><span className="dtl-badge-n" aria-hidden="true">2</span>Výsledek zpětné indukce (fold-back)</h2>
+        <h2 className="dtl-step-tag"><span className="dtl-badge-n" aria-hidden="true">2</span>{tr('Výsledek zpětné indukce (fold-back)', 'Backward induction result (fold-back)')}</h2>
         <div className="dtl-results-grid">
           {root && emvData.emv[root] != null && (
             <div className="dtl-result-item dtl-result-item--primary">
-              <span className="dtl-result-label">EMV kořene</span>
-              <span className="dtl-result-val">{fmtVal(emvData.emv[root])}</span>
+              <span className="dtl-result-label">{tr('EMV kořene', 'Root EMV')}</span>
+              <span className="dtl-result-val">{fmt(emvData.emv[root])}</span>
             </div>
           )}
           {Object.entries(tree.nodes).filter(([, n]) => n.type === 'decision').map(([id, node]) => {
@@ -467,14 +508,17 @@ export default function DecisionTreeLab() {
             return (
               <div key={id} className="dtl-result-item">
                 <span className="dtl-result-label">{node.label}</span>
-                <span className="dtl-result-val dtl-result-val--dec">→ {bestEdge.label} ({fmtVal(emvData.emv[bestCid])})</span>
+                <span className="dtl-result-val dtl-result-val--dec">→ {bestEdge.label} ({fmt(emvData.emv[bestCid])})</span>
               </div>
             );
           })}
         </div>
         {probWarns.length === 0 && root && (
           <div className="dtl-result-note">
-            Plná modrá cesta označuje optimální akci v každém rozhodovacím uzlu (maximalizace EMV), ostatní větve jsou přerušované.
+            {tr(
+              'Plná modrá cesta označuje optimální akci v každém rozhodovacím uzlu (maximalizace EMV), ostatní větve jsou přerušované.',
+              'The solid blue path marks the optimal action at each decision node (EMV maximisation); other branches are dashed.',
+            )}
           </div>
         )}
       </div>

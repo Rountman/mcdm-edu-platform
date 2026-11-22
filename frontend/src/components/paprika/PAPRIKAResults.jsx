@@ -1,11 +1,13 @@
 import { ACCENT, BAR_NEUTRAL, TEXT } from '../ahp/ahp.constants';
 import { tiedAtTop, tieNote } from '../../utils/ranking';
+import { useLang } from '../../i18n/lang';
 
 export default function PAPRIKAResults({ results, criteriaNames, altNames }) {
   const { weights, scores, ranking, criteria_wins } = results;
+  const { lang, tr } = useLang();
   const sortedScores = ranking.map((i) => scores[i]);
   const uniqueWinner = tiedAtTop(sortedScores) === 1;
-  const tie = tieNote(sortedScores);
+  const tie = tieNote(sortedScores, lang);
 
   const maxW = Math.max(...weights);
   const maxS = Math.max(...scores);
@@ -14,7 +16,7 @@ export default function PAPRIKAResults({ results, criteriaNames, altNames }) {
     <div className="pap-results">
       {/* Alternative scores */}
       <div className="pap-res-section">
-        <h3 className="pap-res-label">Výsledné pořadí alternativ <span className="pap-res-unit">(skóre 0–100)</span></h3>
+        <h3 className="pap-res-label">{tr('Výsledné pořadí alternativ', 'Final ranking of alternatives')} <span className="pap-res-unit">({tr('skóre 0–100', 'score 0–100')})</span></h3>
         {ranking.map((altIdx, rank) => (
           <div key={altIdx} className="pap-res-row">
             <span className={`pap-res-rank${rank === 0 && uniqueWinner ? ' pap-res-rank--top' : ''}`}>
@@ -40,12 +42,12 @@ export default function PAPRIKAResults({ results, criteriaNames, altNames }) {
 
       {/* Criteria weights from comparisons */}
       <div className="pap-res-section">
-        <h3 className="pap-res-label">Odvozené váhy kritérií <span className="pap-res-unit">(součet 100 %)</span></h3>
+        <h3 className="pap-res-label">{tr('Odvozené váhy kritérií', 'Derived criteria weights')} <span className="pap-res-unit">({tr('součet 100 %', 'sum 100%')})</span></h3>
         {weights.map((w, j) => (
           <div key={j} className="pap-res-row">
             <span className="pap-res-name">{criteriaNames[j]}</span>
             <span className="pap-res-wins">
-              {criteria_wins[j] > 0 ? `${criteria_wins[j]}× vítěz` : 'bez výhry'}
+              {criteria_wins[j] > 0 ? tr(`${criteria_wins[j]}× vítěz`, `${criteria_wins[j]}× winner`) : tr('bez výhry', 'no wins')}
             </span>
             <div className="pap-res-track" aria-hidden="true">
               <div
@@ -54,7 +56,7 @@ export default function PAPRIKAResults({ results, criteriaNames, altNames }) {
               />
             </div>
             <span className="pap-res-pct" style={{ color: TEXT }}>
-              {(w * 100).toFixed(1)} %
+              {(w * 100).toFixed(1)}{tr(' %', '%')}
             </span>
           </div>
         ))}

@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
 import Sidebar from './components/Sidebar';
 import ModuleContent from './components/ModuleContent';
 import { MODULES, TAB_SLUGS } from './components/modules';
 import { tokens } from './styles/tokens';
+import { LanguageProvider } from './i18n/LanguageContext';
+import { useLang } from './i18n/lang';
 
 const MODULE_SLUGS = MODULES.map((m) => m.slug);
-const TEXT_SIZE_KEY = 'mcdm-text-size';
 
 const theme = createTheme({
   palette: {
@@ -35,17 +35,10 @@ const theme = createTheme({
   },
 });
 
-function readTextSize() {
-  try {
-    return localStorage.getItem(TEXT_SIZE_KEY) === 'large';
-  } catch {
-    return false;
-  }
-}
-
-function ModulePage({ largeText, onToggleLargeText }) {
+function ModulePage() {
   const { module, tab } = useParams();
   const navigate = useNavigate();
+  const { tr } = useLang();
   const activeMenu = MODULE_SLUGS.indexOf(module);
   const activeTab = TAB_SLUGS.indexOf(tab);
   if (activeMenu < 0 || activeTab < 0) return <Navigate to="/ahp/teorie" replace />;
@@ -62,41 +55,25 @@ function ModulePage({ largeText, onToggleLargeText }) {
         document.getElementById('main-content')?.focus();
       }}
       >
-        Přeskočit na obsah
+        {tr('Přeskočit na obsah', 'Skip to content')}
       </a>
-      <Sidebar
-        activeMenu={activeMenu}
-        setActiveMenu={setActiveMenu}
-        largeText={largeText}
-        onToggleLargeText={onToggleLargeText}
-      />
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
       <ModuleContent activeMenu={activeMenu} activeTab={activeTab} setActiveTab={setActiveTab} />
     </Box>
   );
 }
 
 function App() {
-  const [largeText, setLargeText] = useState(readTextSize);
-
-  useEffect(() => {
-    document.documentElement.dataset.textSize = largeText ? 'large' : 'normal';
-    try {
-      localStorage.setItem(TEXT_SIZE_KEY, largeText ? 'large' : 'normal');
-    } catch {
-      // úložiště nemusí být dostupné (soukromé okno) – volba pak platí jen do obnovení
-    }
-  }, [largeText]);
-
-  const page = <ModulePage largeText={largeText} onToggleLargeText={() => setLargeText((v) => !v)} />;
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Routes>
-        <Route path="/:module/:tab" element={page} />
-        <Route path="*" element={<Navigate to="/ahp/teorie" replace />} />
-      </Routes>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Routes>
+          <Route path="/:module/:tab" element={<ModulePage />} />
+          <Route path="*" element={<Navigate to="/ahp/teorie" replace />} />
+        </Routes>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

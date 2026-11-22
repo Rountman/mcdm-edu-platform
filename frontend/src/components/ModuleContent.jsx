@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Box, Typography, Paper, Tabs, Tab } from '@mui/material';
 import { MODULES, TAB_LABELS } from './modules';
+import { useLang } from '../i18n/lang';
 
 const AHPInputTable      = lazy(() => import('./ahp/AHPInputTable'));
 const AHPTheory          = lazy(() => import('./ahp/AHPTheory'));
@@ -19,6 +20,7 @@ const LAB_COMPONENTS    = [AHPInputTable, SMARTLab, PAPRIKALab, SensitivityLab, 
 export default function ModuleContent({ activeMenu, activeTab, setActiveTab }) {
   const TheoryComponent = THEORY_COMPONENTS[activeMenu] ?? null;
   const LabComponent    = LAB_COMPONENTS[activeMenu] ?? null;
+  const { lang, tr } = useLang();
   const headingRef = useRef(null);
   const prevMenu = useRef(activeMenu);
 
@@ -31,8 +33,8 @@ export default function ModuleContent({ activeMenu, activeTab, setActiveTab }) {
   }, [activeMenu]);
 
   useEffect(() => {
-    document.title = `${MODULES[activeMenu].label} – ${TAB_LABELS[activeTab]} | MCDM Edu`;
-  }, [activeMenu, activeTab]);
+    document.title = `${MODULES[activeMenu].label[lang]} – ${TAB_LABELS[activeTab][lang]} | MCDM Edu`;
+  }, [activeMenu, activeTab, lang]);
 
   return (
     <Box
@@ -50,7 +52,7 @@ export default function ModuleContent({ activeMenu, activeTab, setActiveTab }) {
     >
       <Box className="lab-shell" sx={{ mb: { xs: 2, md: 3 } }}>
         <Typography ref={headingRef} tabIndex={-1} className="lab-title" component="h1" sx={{ '&:focus': { outline: 'none' } }}>
-          {MODULES[activeMenu].label}
+          {MODULES[activeMenu].label[lang]}
         </Typography>
       </Box>
 
@@ -59,12 +61,12 @@ export default function ModuleContent({ activeMenu, activeTab, setActiveTab }) {
           <Tabs
             value={activeTab}
             onChange={(_, newValue) => setActiveTab(newValue)}
-            aria-label="Část modulu"
+            aria-label={tr('Část modulu', 'Module section')}
             variant="fullWidth"
             sx={{ maxWidth: 480 }}
           >
             {TAB_LABELS.map((label, i) => (
-              <Tab key={label} label={label} id={`module-tab-${i}`} aria-controls="module-tabpanel" />
+              <Tab key={label.cs} label={label[lang]} id={`module-tab-${i}`} aria-controls="module-tabpanel" />
             ))}
           </Tabs>
         </Box>
@@ -75,16 +77,16 @@ export default function ModuleContent({ activeMenu, activeTab, setActiveTab }) {
           aria-labelledby={`module-tab-${activeTab}`}
           sx={{ p: { xs: 2, md: 3 }, minWidth: 0 }}
         >
-          <Suspense fallback={<Box role="status" sx={{ p: 3, color: 'text.secondary' }}>Načítání…</Box>}>
+          <Suspense fallback={<Box role="status" sx={{ p: 3, color: 'text.secondary' }}>{tr('Načítání…', 'Loading…')}</Box>}>
             {activeTab === 0 && (
               TheoryComponent
                 ? <TheoryComponent />
-                : <Typography variant="body1" color="text.secondary">Teorie se připravuje…</Typography>
+                : <Typography variant="body1" color="text.secondary">{tr('Teorie se připravuje…', 'Theory is being prepared…')}</Typography>
             )}
             {activeTab === 1 && (
               LabComponent
                 ? <LabComponent />
-                : <Typography variant="body1" color="text.secondary">Laboratoř se připravuje…</Typography>
+                : <Typography variant="body1" color="text.secondary">{tr('Laboratoř se připravuje…', 'Lab is being prepared…')}</Typography>
             )}
           </Suspense>
         </Box>

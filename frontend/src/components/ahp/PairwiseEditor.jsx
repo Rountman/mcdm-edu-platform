@@ -4,8 +4,11 @@ import ConsistencyBadge from './ConsistencyBadge';
 import SaatySlider from './SaatySlider';
 import { ACCENT, BAR_NEUTRAL, TEXT } from './ahp.constants';
 import { fmt, pairwiseConsistency } from './ahp.math';
+import { useLang } from '../../i18n/lang';
 
-const pairWord = (n) => `${n} ${n === 1 ? 'dvojice' : n < 5 ? 'dvojice' : 'dvojic'} k porovnání`;
+const pairWord = (n, lang) => (lang === 'en'
+  ? `${n} ${n === 1 ? 'pair' : 'pairs'} to compare`
+  : `${n} ${n < 5 ? 'dvojice' : 'dvojic'} k porovnání`);
 
 // Párové srovnání: posuvníky vlevo, vpravo živá matice, priority a CR.
 export default function PairwiseEditor({ names, matrix, onChange, priorityLabel }) {
@@ -17,6 +20,7 @@ export default function PairwiseEditor({ names, matrix, onChange, priorityLabel 
     }
     return list;
   }, [n]);
+  const { lang, tr } = useLang();
   const live = pairwiseConsistency(matrix);
   const max = Math.max(...live.weights);
 
@@ -24,7 +28,10 @@ export default function PairwiseEditor({ names, matrix, onChange, priorityLabel 
     <div className="ahp-two-col">
       <div>
         <p className="ahp-field-label" style={{ marginTop: 0, marginBottom: 10 }}>
-          {pairWord(pairs.length)}. Posuňte jezdec ke straně, která je důležitější (myší, dotykem nebo šipkami).
+          {pairWord(pairs.length, lang)}. {tr(
+            'Posuňte jezdec ke straně, která je důležitější (myší, dotykem nebo šipkami).',
+            'Move the slider towards the more important side (mouse, touch or arrow keys).',
+          )}
         </p>
         <div className="ahp-comp-grid">
           {pairs.map(({ i, j }) => (
@@ -43,7 +50,7 @@ export default function PairwiseEditor({ names, matrix, onChange, priorityLabel 
       <div className="ahp-sticky-col">
         <AHPMatrix names={names} matrix={matrix} />
         <div className="ahp-results-card">
-          <h3 className="ahp-card-title">{priorityLabel} (živý náhled)</h3>
+          <h3 className="ahp-card-title">{priorityLabel} ({tr('živý náhled', 'live preview')})</h3>
           {live.weights.map((w, i) => (
             <div key={i} className="ahp-weight-row">
               <span className="ahp-weight-name" title={names[i]}>{names[i]}</span>

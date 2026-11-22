@@ -15,47 +15,59 @@ import {
 } from '@mui/material';
 import Logo from './Logo';
 import { MODULES, TAB_SLUGS } from './modules';
+import { useLang } from '../i18n/lang';
 
 const drawerWidth = 272;
 
-function Brand() {
+function Brand({ compact = false }) {
+  const { tr } = useLang();
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
       <Logo size={36} />
-      <Box>
+      <Box sx={{ minWidth: 0 }}>
         <Typography component="p" sx={{ fontWeight: 700, fontSize: '1.125rem', lineHeight: 1.2, color: 'text.primary' }}>
           MCDM Edu
         </Typography>
-        <Typography component="p" sx={{ fontSize: '0.875rem', color: 'text.secondary', lineHeight: 1.3 }}>
-          Vícekriteriální rozhodování
-        </Typography>
+        {!compact && (
+          <Typography component="p" sx={{ fontSize: '0.875rem', color: 'text.secondary', lineHeight: 1.3 }}>
+            {tr('Vícekriteriální rozhodování', 'Multi-criteria decision making')}
+          </Typography>
+        )}
       </Box>
     </Box>
   );
 }
 
-function TextSizeToggle({ largeText, onToggle }) {
+// Přepínač jazyka: dvě tlačítka se stavem aria-pressed; zkratka je viditelná, plný název čte čtečka
+function LanguageSwitch() {
+  const { lang, setLang, tr } = useLang();
+  const options = [
+    { code: 'cs', short: 'CZ', name: 'Čeština' },
+    { code: 'en', short: 'EN', name: 'English' },
+  ];
   return (
-    <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-      <button
-        type="button"
-        className="u-tbtn"
-        aria-pressed={largeText}
-        onClick={onToggle}
-        style={{ width: '100%', justifyContent: 'center' }}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M3 19 8 5l5 14M4.8 14h6.4M14 19l3.5-9 3.5 9M15.2 16h4.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        {largeText ? 'Běžné písmo' : 'Velké písmo (projektor)'}
-      </button>
-    </Box>
+    <div className="lang-switch" role="group" aria-label={tr('Jazyk', 'Language')}>
+      {options.map((o) => (
+        <button
+          key={o.code}
+          type="button"
+          lang={o.code}
+          className={`lang-switch-btn${lang === o.code ? ' lang-switch-btn--active' : ''}`}
+          aria-pressed={lang === o.code}
+          aria-label={o.name}
+          onClick={() => setLang(o.code)}
+        >
+          {o.short}
+        </button>
+      ))}
+    </div>
   );
 }
 
 function NavList({ activeMenu, onSelect }) {
+  const { lang, tr } = useLang();
   return (
-    <Box component="nav" aria-label="Moduly">
+    <Box component="nav" aria-label={tr('Moduly', 'Modules')}>
       <List sx={{ p: 1.5 }}>
         {MODULES.map(({ slug, label }, index) => {
           const active = activeMenu === index;
@@ -82,7 +94,7 @@ function NavList({ activeMenu, onSelect }) {
                 }}
               >
                 <ListItemText
-                  primary={label}
+                  primary={label[lang]}
                   slotProps={{ primary: { sx: { fontSize: '1rem', fontWeight: active ? 700 : 500 } } }}
                 />
               </ListItemButton>
@@ -94,8 +106,9 @@ function NavList({ activeMenu, onSelect }) {
   );
 }
 
-export default function Sidebar({ activeMenu, setActiveMenu, largeText, onToggleLargeText }) {
+export default function Sidebar({ activeMenu, setActiveMenu }) {
   const theme = useTheme();
+  const { tr } = useLang();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'), { noSsr: true });
   const [open, setOpen] = useState(false);
 
@@ -105,8 +118,11 @@ export default function Sidebar({ activeMenu, setActiveMenu, largeText, onToggle
         <Brand />
       </Box>
       <NavList activeMenu={activeMenu} onSelect={onSelect} />
-      <Box sx={{ mt: 'auto' }}>
-        <TextSizeToggle largeText={largeText} onToggle={onToggleLargeText} />
+      <Box sx={{ mt: 'auto', p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+        <Typography component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary', fontWeight: 600 }}>
+          {tr('Jazyk', 'Language')}
+        </Typography>
+        <LanguageSwitch />
       </Box>
     </Box>
   );
@@ -138,7 +154,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, largeText, onToggle
         <Toolbar sx={{ gap: 1, minHeight: 60 }}>
           <IconButton
             edge="start"
-            aria-label="Otevřít menu modulů"
+            aria-label={tr('Otevřít menu modulů', 'Open module menu')}
             aria-expanded={open}
             aria-controls="module-drawer"
             onClick={() => setOpen(true)}
@@ -148,7 +164,10 @@ export default function Sidebar({ activeMenu, setActiveMenu, largeText, onToggle
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </IconButton>
-          <Brand />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Brand compact />
+          </Box>
+          <LanguageSwitch />
         </Toolbar>
       </AppBar>
       <Drawer

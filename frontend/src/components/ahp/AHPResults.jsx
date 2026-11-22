@@ -1,5 +1,6 @@
 import ConsistencyBadge from './ConsistencyBadge';
-import { ACCENT, BAR_NEUTRAL, DANGER, METHOD_LABELS, SUCCESS, TEXT } from './ahp.constants';
+import { ACCENT, BAR_NEUTRAL, DANGER, METHOD_LABELS, METHOD_LABELS_EN, SUCCESS, TEXT } from './ahp.constants';
+import { useLang } from '../../i18n/lang';
 import { fmt, parseNum } from './ahp.math';
 import { tiedAtTop, tieNote } from '../../utils/ranking';
 
@@ -32,43 +33,46 @@ function sortedDesc(names, values) {
 }
 
 // Hodnota před normalizací tak, jak ji student zadal / jak vyšla z metody.
-function rawLabel(lp, ev, i) {
+function rawLabel(lp, ev, i, tr) {
   if (lp.method === 'pairwise') return null;
-  if (lp.method === 'direct') return `${fmt(lp.raw[i], 1)} b.`;
+  if (lp.method === 'direct') return `${fmt(lp.raw[i], 1)} ${tr('b.', 'pts')}`;
   return `${parseNum(ev.values[i])} → v = ${fmt(lp.raw[i], 2)}`;
 }
 
 function ConsistencyOverview({ results, critNames, onGoTo }) {
+  const { tr } = useLang();
   const rows = [{
     key: 'crit',
-    label: 'Kritéria (váhy)',
+    label: tr('Kritéria (váhy)', 'Criteria (weights)'),
     n: critNames.length,
     c: results.criteria.consistency,
     step: 1,
     criterion: null,
-    stepLabel: 'krok 2',
+    stepLabel: tr('krok 2', 'step 2'),
   }];
   results.local_priorities.forEach((lp, j) => {
     if (lp.method !== 'pairwise') return;
     rows.push({
       key: `alt-${j}`,
-      label: `Alternativy vůči ${critNames[j]}`,
+      label: tr(`Alternativy vůči ${critNames[j]}`, `Alternatives vs. ${critNames[j]}`),
       n: lp.raw.length,
       c: lp.consistency,
       step: 2,
       criterion: j,
-      stepLabel: `krok 3 – ${critNames[j]}`,
+      stepLabel: tr(`krok 3 – ${critNames[j]}`, `step 3 – ${critNames[j]}`),
     });
   });
   const bad = rows.filter((r) => !r.c.is_consistent);
 
   return (
     <div className="ahp-results-card ahp-results-block">
-      <h3 className="ahp-card-title">Konzistence párových matic</h3>
+      <h3 className="ahp-card-title">{tr('Konzistence párových matic', 'Consistency of pairwise matrices')}</h3>
       {bad.length > 0 && (
         <div className="ahp-warning" role="alert">
-          <strong>Pozor:</strong> {bad.length === 1 ? 'jedna matice je nekonzistentní' : `${bad.length} matice jsou nekonzistentní`} (CR ≥ 0,1).
-          Výsledné pořadí může být nespolehlivé – upravte srovnání:
+          <strong>{tr('Pozor:', 'Warning:')}</strong> {bad.length === 1
+            ? tr('jedna matice je nekonzistentní', 'one matrix is inconsistent')
+            : tr(`${bad.length} matice jsou nekonzistentní`, `${bad.length} matrices are inconsistent`)} (CR ≥ {tr('0,1', '0.1')}).{' '}
+          {tr('Výsledné pořadí může být nespolehlivé – upravte srovnání:', 'The final ranking may be unreliable – adjust the comparisons:')}
           <div className="ahp-warning-links">
             {bad.map((r) => (
               <button key={r.key} type="button" className="ahp-link-btn" onClick={() => onGoTo(r.step, r.criterion)}>
@@ -82,13 +86,13 @@ function ConsistencyOverview({ results, critNames, onGoTo }) {
         <table className="ahp-data-table ahp-data-table--num">
           <thead>
             <tr>
-              <th>Matice</th>
+              <th>{tr('Matice', 'Matrix')}</th>
               <th>n</th>
               <th>λmax</th>
               <th>CI</th>
               <th>RI</th>
               <th>CR</th>
-              <th>Stav</th>
+              <th>{tr('Stav', 'Status')}</th>
             </tr>
           </thead>
           <tbody>
@@ -113,7 +117,7 @@ function ConsistencyOverview({ results, critNames, onGoTo }) {
         </table>
       </div>
       {rows.length === 1 && (
-        <p className="ahp-hint">Žádné kritérium nepoužívá párové hodnocení alternativ.</p>
+        <p className="ahp-hint">{tr('Žádné kritérium nepoužívá párové hodnocení alternativ.', 'No criterion uses pairwise rating of alternatives.')}</p>
       )}
     </div>
   );
@@ -123,15 +127,17 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
   const weights = results.criteria.weights;
   const ranking = results.ranking;
   const scores = results.global_scores;
+  const { lang, tr } = useLang();
+  const methodLabels = lang === 'en' ? METHOD_LABELS_EN : METHOD_LABELS;
   const sortedScores = ranking.map((i) => scores[i]);
   const uniqueWinner = tiedAtTop(sortedScores) === 1;
-  const tie = tieNote(sortedScores);
+  const tie = tieNote(sortedScores, lang);
 
   return (
     <div className="ahp-results">
       <div className="ahp-results-grid">
         <div className="ahp-results-card">
-          <h3 className="ahp-card-title">Výsledné pořadí alternativ</h3>
+          <h3 className="ahp-card-title">{tr('Výsledné pořadí alternativ', 'Final ranking of alternatives')}</h3>
           <WeightBars
             items={ranking.map((i, r) => ({
               name: altNames[i],
@@ -140,11 +146,14 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
             }))}
           />
           {tie && <p className="u-alert u-alert--warning" style={{ marginTop: 12 }}>{tie}</p>}
-          <p className="ahp-hint">Globální skóre = Σ váha kritéria × normalizovaná lokální priorita; součet skóre = 100 %.</p>
+          <p className="ahp-hint">{tr(
+            'Globální skóre = Σ váha kritéria × normalizovaná lokální priorita; součet skóre = 100 %.',
+            'Global score = Σ criterion weight × normalised local priority; scores sum to 100%.',
+          )}</p>
         </div>
 
         <div className="ahp-results-card">
-          <h3 className="ahp-card-title">Váhy kritérií</h3>
+          <h3 className="ahp-card-title">{tr('Váhy kritérií', 'Criteria weights')}</h3>
           <WeightBars items={sortedDesc(critNames, weights)} />
           <ConsistencyBadge
             cr={results.criteria.consistency.cr}
@@ -155,21 +164,23 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
       </div>
 
       <div className="ahp-results-card ahp-results-block">
-        <h3 className="ahp-card-title">Lokální priority alternativ</h3>
+        <h3 className="ahp-card-title">{tr('Lokální priority alternativ', 'Local priorities of alternatives')}</h3>
         <p className="ahp-hint" style={{ marginTop: 0 }}>
-          Každý sloupec se před syntézou normalizuje na součet 1. U metod Přímo a SMART je vidět hodnota před
-          normalizací (body, resp. skutečná hodnota → hodnotová funkce v) a výsledná priorita.
+          {tr(
+            'Každý sloupec se před syntézou normalizuje na součet 1. U metod Přímo a SMART je vidět hodnota před normalizací (body, resp. skutečná hodnota → hodnotová funkce v) a výsledná priorita.',
+            'Each column is normalised to sum to 1 before synthesis. For the Direct and SMART methods the value before normalisation (points, or actual value → value function v) and the resulting priority are shown.',
+          )}
         </p>
         <div className="ahp-table-wrap">
           <table className="ahp-data-table ahp-data-table--num">
             <thead>
               <tr>
-                <th>Alternativa</th>
+                <th>{tr('Alternativa', 'Alternative')}</th>
                 {critNames.map((name, j) => (
                   <th key={j}>
                     <div>{name}</div>
                     <div className="ahp-th-sub">
-                      {METHOD_LABELS[results.local_priorities[j].method]}
+                      {methodLabels[results.local_priorities[j].method]}
                       {results.local_priorities[j].method === 'smart' && ` · ${evals[j].type}`}
                     </div>
                   </th>
@@ -181,7 +192,7 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
                 <tr key={i}>
                   <td className="ahp-td-name">{name}</td>
                   {results.local_priorities.map((lp, j) => {
-                    const raw = rawLabel(lp, evals[j], i);
+                    const raw = rawLabel(lp, evals[j], i, tr);
                     return (
                       <td key={j}>
                         {raw && <div className="ahp-td-raw">{raw}</div>}
@@ -192,7 +203,7 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
                 </tr>
               ))}
               <tr className="ahp-tr-sum">
-                <td className="ahp-td-name">Součet</td>
+                <td className="ahp-td-name">{tr('Součet', 'Sum')}</td>
                 {results.local_priorities.map((lp, j) => (
                   <td key={j}>{fmt(lp.normalized.reduce((s, x) => s + x, 0))}</td>
                 ))}
@@ -203,19 +214,19 @@ export default function AHPResults({ results, critNames, altNames, evals, onGoTo
       </div>
 
       <div className="ahp-results-card ahp-results-block">
-        <h3 className="ahp-card-title">Vážené příspěvky (váha × lokální priorita)</h3>
+        <h3 className="ahp-card-title">{tr('Vážené příspěvky (váha × lokální priorita)', 'Weighted contributions (weight × local priority)')}</h3>
         <div className="ahp-table-wrap">
           <table className="ahp-data-table ahp-data-table--num">
             <thead>
               <tr>
-                <th>Alternativa</th>
+                <th>{tr('Alternativa', 'Alternative')}</th>
                 {critNames.map((name, j) => (
                   <th key={j}>
                     <div>{name}</div>
                     <div className="ahp-th-sub">w = {fmt(weights[j])}</div>
                   </th>
                 ))}
-                <th>Skóre</th>
+                <th>{tr('Skóre', 'Score')}</th>
               </tr>
             </thead>
             <tbody>

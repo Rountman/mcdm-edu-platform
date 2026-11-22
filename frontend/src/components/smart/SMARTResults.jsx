@@ -1,11 +1,13 @@
 import { ACCENT, BAR_NEUTRAL, TEXT } from '../ahp/ahp.constants';
 import { tiedAtTop, tieNote } from '../../utils/ranking';
+import { useLang } from '../../i18n/lang';
 
 export default function SMARTResults({ results, criteriaNames, altNames }) {
   const { scores, normalized_weights, ranking } = results;
+  const { lang, tr } = useLang();
   const sortedScores = ranking.map((i) => scores[i]);
   const uniqueWinner = tiedAtTop(sortedScores) === 1;
-  const tie = tieNote(sortedScores);
+  const tie = tieNote(sortedScores, lang);
 
   const maxScore = Math.max(...scores);
   const maxW = Math.max(...normalized_weights);
@@ -14,7 +16,7 @@ export default function SMARTResults({ results, criteriaNames, altNames }) {
     <div className="smrt-results">
       {/* Alternative scores */}
       <div className="smrt-res-section">
-        <h3 className="smrt-res-label">Celkové skóre alternativ <span className="smrt-res-unit">(0–100 bodů)</span></h3>
+        <h3 className="smrt-res-label">{tr('Celkové skóre alternativ', 'Total scores of alternatives')} <span className="smrt-res-unit">({tr('0–100 bodů', '0–100 points')})</span></h3>
         {ranking.map((altIdx, rank) => (
           <div key={altIdx} className="smrt-res-row">
             <span className={`smrt-res-rank${rank === 0 && uniqueWinner ? ' smrt-res-rank--top' : ''}`}>
@@ -40,7 +42,7 @@ export default function SMARTResults({ results, criteriaNames, altNames }) {
 
       {/* Criteria weights */}
       <div className="smrt-res-section">
-        <h3 className="smrt-res-label">Váhy kritérií <span className="smrt-res-unit">(normalizované, součet 100 %)</span></h3>
+        <h3 className="smrt-res-label">{tr('Váhy kritérií', 'Criteria weights')} <span className="smrt-res-unit">({tr('normalizované, součet 100 %', 'normalised, sum 100%')})</span></h3>
         {normalized_weights.map((w, j) => (
           <div key={j} className="smrt-res-row">
             <span className="smrt-res-name">{criteriaNames[j]}</span>
@@ -51,7 +53,7 @@ export default function SMARTResults({ results, criteriaNames, altNames }) {
               />
             </div>
             <span className="smrt-res-pct" style={{ color: TEXT }}>
-              {(w * 100).toFixed(1)} %
+              {(w * 100).toFixed(1)}{tr(' %', '%')}
             </span>
           </div>
         ))}

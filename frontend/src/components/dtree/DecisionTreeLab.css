@@ -117,5 +117,5 @@
 @media (max-width: 700px) {
   .dtl-tree-scroll { overflow-x: auto; padding-bottom: var(--space-2); }
   .dtl-tree-scroll .dtl-tree-container { min-width: 640px; }
-  .dtl-hint::after { content: ' Strom lze posouvat do stran.'; }
+  .dtl-hint::after { content: attr(data-scroll-hint); }
 }

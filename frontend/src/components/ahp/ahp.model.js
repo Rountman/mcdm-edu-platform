@@ -8,6 +8,9 @@ import {
 } from './ahp.constants';
 import { parseNum } from './ahp.math';
 
+// Chyba importu: message = česky (beze změny), en = anglická varianta pro zobrazení
+const bErr = (cs, en) => Object.assign(new Error(cs), { en });
+
 // Model labu. Kritéria jsou zatím jedna úroveň: critMatrix srovnává kritéria pod
 // kořenem a evals[j] je hodnocení alternativ vůči kritériu j. Každé hodnocení je
 // samostatný objekt, takže víceúrovňová hierarchie ho později jen přesune do
@@ -105,19 +108,20 @@ export function validateModel(model) {
   const issues = [];
   const cNames = critNamesOf(model);
   const aNames = altNamesOf(model);
-  if (cNames.some((n) => !n.trim())) issues.push({ step: 0, message: 'Některé kritérium nemá název.' });
-  if (aNames.some((n) => !n.trim())) issues.push({ step: 0, message: 'Některá alternativa nemá název.' });
+  if (cNames.some((n) => !n.trim())) issues.push({ step: 0, message: 'Některé kritérium nemá název.', messageEn: 'A criterion has no name.' });
+  if (aNames.some((n) => !n.trim())) issues.push({ step: 0, message: 'Některá alternativa nemá název.', messageEn: 'An alternative has no name.' });
   model.evals.forEach((ev, j) => {
     const label = cNames[j] || `Kritérium ${j + 1}`;
+    const labelEn = cNames[j] || `Criterion ${j + 1}`;
     if (ev.method === 'direct') {
       const bad = ev.scores.some((s) => {
         const x = parseNum(s);
         return !Number.isFinite(x) || x < 0 || x > 100;
       });
-      if (bad) issues.push({ step: 2, criterion: j, message: `${label}: body musí být čísla 0–100.` });
+      if (bad) issues.push({ step: 2, criterion: j, message: `${label}: body musí být čísla 0–100.`, messageEn: `${labelEn}: points must be numbers 0–100.` });
     } else if (ev.method === 'smart') {
       if (ev.values.some((s) => !Number.isFinite(parseNum(s)))) {
-        issues.push({ step: 2, criterion: j, message: `${label}: vyplňte číselné hodnoty všech alternativ.` });
+        issues.push({ step: 2, criterion: j, message: `${label}: vyplňte číselné hodnoty všech alternativ.`, messageEn: `${labelEn}: enter numeric values for all alternatives.` });
       }
     }
   });
@@ -166,15 +170,15 @@ function checkPairwise(matrix, n, label) {
   const ok = Array.isArray(matrix) && matrix.length === n && matrix.every((row) => (
     Array.isArray(row) && row.length === n && row.every((x) => typeof x === 'number' && x > 0)
   ));
-  if (!ok) throw new Error(`${label}: neplatná matice.`);
+  if (!ok) throw bErr(`${label}: neplatná matice.`, `${label === 'Matice kritérií' ? 'Criteria matrix' : label}: invalid matrix.`);
   const reciprocal = matrix.every((row, i) => row.every((x, j) => Math.abs(x * matrix[j][i] - 1) <= 0.01));
-  if (!reciprocal) throw new Error(`${label}: matice není reciproční.`);
+  if (!reciprocal) throw bErr(`${label}: matice není reciproční.`, `${label === 'Matice kritérií' ? 'Criteria matrix' : label}: the matrix is not reciprocal.`);
   return matrix.map((row) => [...row]);
 }
 
 function checkNames(names, min, max, label) {
   if (!Array.isArray(names) || names.length < min || names.length > max) {
-    throw new Error(`Neplatný počet ${label} (povoleno ${min}–${max}).`);
+    throw bErr(`Neplatný počet ${label} (povoleno ${min}–${max}).`, `Invalid number of ${label === 'kritérií' ? 'criteria' : 'alternatives'} (allowed ${min}–${max}).`);
   }
   return names.map((n) => String(n ?? ''));
 }
@@ -183,17 +187,17 @@ const toText = (x) => (typeof x === 'number' && Number.isFinite(x) ? String(x) :
 
 function importEvaluation(raw, nAlts, label) {
   const ev = makeEvaluation(nAlts);
-  if (!raw || !METHOD_IDS.includes(raw.method)) throw new Error(`${label}: neznámá metoda hodnocení.`);
+  if (!raw || !METHOD_IDS.includes(raw.method)) throw bErr(`${label}: neznámá metoda hodnocení.`, `${label}: unknown evaluation method.`);
   ev.method = raw.method;
   if (raw.method === 'pairwise') {
     ev.matrix = checkPairwise(raw.matrix, nAlts, label);
   } else {
     const list = raw.method === 'direct' ? raw.scores : raw.values;
-    if (!Array.isArray(list) || list.length !== nAlts) throw new Error(`${label}: neplatný počet hodnot.`);
+    if (!Array.isArray(list) || list.length !== nAlts) throw bErr(`${label}: neplatný počet hodnot.`, `${label}: invalid number of values.`);
     if (raw.method === 'direct') ev.scores = list.map(toText);
     else {
       ev.values = list.map(toText);
-      if (!['benefit', 'cost'].includes(raw.type)) throw new Error(`${label}: neplatný typ (benefit/cost).`);
+      if (!['benefit', 'cost'].includes(raw.type)) throw bErr(`${label}: neplatný typ (benefit/cost).`, `${label}: invalid type (benefit/cost).`);
       ev.type = raw.type;
     }
   }
@@ -202,13 +206,13 @@ function importEvaluation(raw, nAlts, label) {
 
 // Načte session verze '2' (celý model) i '1' (jen kritéria → alternativy výchozí).
 export function importModel(data) {
-  if (data?.method !== 'AHP') throw new Error('Soubor není AHP session.');
-  if (!data.version) throw new Error('Chybí verze schématu.');
+  if (data?.method !== 'AHP') throw bErr('Soubor není AHP session.', 'The file is not an AHP session.');
+  if (!data.version) throw bErr('Chybí verze schématu.', 'Schema version is missing.');
   const base = createInitialModel();
 
   if (String(data.version) === '1') {
     const names = checkNames(data.criteriaNames, MIN_CRIT, MAX_CRIT, 'kritérií');
-    if (data.size !== names.length) throw new Error('Neplatný počet kritérií.');
+    if (data.size !== names.length) throw bErr('Neplatný počet kritérií.', 'Invalid number of criteria.');
     const n = names.length;
     return {
       ...base,
@@ -219,8 +223,8 @@ export function importModel(data) {
     };
   }
 
-  if (String(data.version) !== SCHEMA_VERSION) throw new Error(`Nepodporovaná verze schématu: ${data.version}.`);
-  if (!Array.isArray(data.criteria) || !Array.isArray(data.alternatives)) throw new Error('Chybí kritéria nebo alternativy.');
+  if (String(data.version) !== SCHEMA_VERSION) throw bErr(`Nepodporovaná verze schématu: ${data.version}.`, `Unsupported schema version: ${data.version}.`);
+  if (!Array.isArray(data.criteria) || !Array.isArray(data.alternatives)) throw bErr('Chybí kritéria nebo alternativy.', 'Criteria or alternatives are missing.');
   const cNames = checkNames(data.criteria.map((c) => c?.name), MIN_CRIT, MAX_CRIT, 'kritérií');
   const aNames = checkNames(data.alternatives.map((a) => a?.name), MIN_ALTS, MAX_ALTS, 'alternativ');
   const nCrit = cNames.length;

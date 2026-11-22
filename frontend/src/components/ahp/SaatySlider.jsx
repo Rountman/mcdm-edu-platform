@@ -7,9 +7,22 @@ import {
   STEP_COUNT,
   CENTER_IDX,
 } from './ahp.constants';
+import { useLang } from '../../i18n/lang';
 
 // Slovní význam stupňů Saatyho škály (sudé = mezistupeň)
-const SAATY_WORDS = {
+const SAATY_WORDS_EN = {
+  1: 'equally important',
+  2: 'between equal and moderate',
+  3: 'moderately more important',
+  4: 'between moderate and strong',
+  5: 'strongly more important',
+  6: 'between strong and very strong',
+  7: 'very strongly more important',
+  8: 'between very strong and extreme',
+  9: 'extremely more important',
+};
+
+const SAATY_WORDS_CS = {
   1: 'stejně důležité',
   2: 'mezi stejně a mírně',
   3: 'mírně důležitější',
@@ -37,6 +50,8 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
     ), 0);
 
   const pct = idx / (STEP_COUNT - 1);
+  const { lang, tr } = useLang();
+  const SAATY_WORDS = lang === 'en' ? SAATY_WORDS_EN : SAATY_WORDS_CS;
   const isEqual = signed === 0;
   const absVal = Math.abs(signed);
   const displayVal = signed > 0 ? `${absVal}:1` : signed < 0 ? `1:${absVal}` : '1:1';
@@ -44,8 +59,8 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
   const loser = signed > 0 ? nameB : nameA;
   const fillColor = signed > 0 ? ACCENT : signed < 0 ? ACCENT2 : MUTED;
   const verdict = isEqual
-    ? `${nameA} a ${nameB} jsou stejně důležité`
-    : `${winner} je oproti ${loser}: ${SAATY_WORDS[absVal]}`;
+    ? tr(`${nameA} a ${nameB} jsou stejně důležité`, `${nameA} and ${nameB} are equally important`)
+    : tr(`${winner} je oproti ${loser}: ${SAATY_WORDS[absVal]}`, `${winner} compared to ${loser}: ${SAATY_WORDS[absVal]}`);
 
   const idxFromX = (clientX) => {
     const rect = trackRef.current.getBoundingClientRect();
@@ -113,7 +128,7 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
           className="ahp-slider-track"
           role="slider"
           tabIndex={0}
-          aria-label={`Srovnání ${nameB} a ${nameA}`}
+          aria-label={tr(`Srovnání ${nameB} a ${nameA}`, `Comparison of ${nameB} and ${nameA}`)}
           aria-valuemin={0}
           aria-valuemax={STEP_COUNT - 1}
           aria-valuenow={idx}
@@ -162,7 +177,7 @@ export default function SaatySlider({ value, nameA, nameB, onChange }) {
       </div>
 
       <div className="ahp-winner-line" style={{ color: isEqual ? MUTED : fillColor }}>
-        {isEqual ? 'Rovnocenné' : `${winner}: ${SAATY_WORDS[absVal]}`}
+        {isEqual ? tr('Rovnocenné', 'Equal') : `${winner}: ${SAATY_WORDS[absVal]}`}
       </div>
     </div>
   );

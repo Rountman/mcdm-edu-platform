@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import './SensitivityLab.css';
 import { downloadJson } from '../../utils/downloadJson';
+import { useLang } from '../../i18n/lang';
 
 const SCHEMA_VERSION = '1';
 
@@ -71,6 +72,7 @@ function findCrossovers(data, nAlts) {
 }
 
 export default function SensitivityLab() {
+  const { lang, tr } = useLang();
   const [nCrit, setNCrit] = useState(3);
   const [nAlts, setNAlts] = useState(3);
   const [critNames, setCritNames] = useState(DEFAULT_CRIT);
@@ -105,12 +107,12 @@ export default function SensitivityLab() {
       try {
         const d = JSON.parse(ev.target.result);
         if (!['SENSITIVITY', 'SMART', 'AHP'].includes(d.method))
-          throw new Error('Nepodporovaný formát. Použijte soubor z SMART, AHP nebo Citlivosti.');
+          throw Object.assign(new Error('Nepodporovaný formát. Použijte soubor z SMART, AHP nebo Citlivosti.'), { en: 'Unsupported format. Use a file from SMART, AHP or Sensitivity.' });
 
         if (d.method === 'AHP') {
           // Import criteria names + weights; keep existing alternatives
           const n = d.size;
-          if (!n || n < 2 || n > MAX_CRIT) throw new Error('Neplatný počet kritérií v AHP souboru.');
+          if (!n || n < 2 || n > MAX_CRIT) throw Object.assign(new Error('Neplatný počet kritérií v AHP souboru.'), { en: 'Invalid number of criteria in the AHP file.' });
           const names = [...DEFAULT_CRIT]; d.criteriaNames.forEach((v, i) => { names[i] = v; });
           setCritNames(names);
           setNCrit(n);
@@ -127,8 +129,8 @@ export default function SensitivityLab() {
 
         // SMART or SENSITIVITY format
         const { nCrit: nc, nAlts: na, criteriaNames: cn, criteriaTypes: ct, weights: wt, altNames: an, ratings: rt } = d;
-        if (!nc || nc < 2 || nc > MAX_CRIT) throw new Error('Neplatný počet kritérií.');
-        if (!na || na < 2 || na > MAX_ALTS) throw new Error('Neplatný počet alternativ.');
+        if (!nc || nc < 2 || nc > MAX_CRIT) throw Object.assign(new Error('Neplatný počet kritérií.'), { en: 'Invalid number of criteria.' });
+        if (!na || na < 2 || na > MAX_ALTS) throw Object.assign(new Error('Neplatný počet alternativ.'), { en: 'Invalid number of alternatives.' });
 
         const newNames = [...DEFAULT_CRIT]; cn.forEach((v, i) => { newNames[i] = v; });
         const newAlts  = [...DEFAULT_ALTS]; an.forEach((v, i) => { newAlts[i]  = v; });
@@ -140,7 +142,11 @@ export default function SensitivityLab() {
         setNCrit(nc); setNAlts(na); setCritNames(newNames); setAltNames(newAlts);
         setCritTypes(newTypes); setWeights(newW); setRatings(newRatings); setFocus(0);
         setImportError(null);
-      } catch (err) { setImportError(err.message); }
+      } catch (err) {
+        setImportError(err instanceof SyntaxError
+          ? { cs: 'Soubor není platný JSON.', en: 'The file is not valid JSON.' }
+          : { cs: err.message, en: err.en ?? err.message });
+      }
     };
     reader.readAsText(file);
   };
@@ -179,30 +185,30 @@ export default function SensitivityLab() {
           <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={handleImportFile} />
           <button type="button" className="snsl-tbtn" onClick={() => fileInputRef.current?.click()}>
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5.5 7 2l3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-            Načíst data
+            {tr('Načíst data', 'Load data')}
           </button>
           <button type="button" className="snsl-tbtn snsl-tbtn--primary" onClick={handleExport}>
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M3.5 5.5 7 9l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M1.5 10v1.5A1 1 0 0 0 2.5 12.5h9a1 1 0 0 0 1-1V10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-            Uložit data
+            {tr('Uložit data', 'Save data')}
           </button>
         </div>
-        {importError && <span className="snsl-toolbar-err" role="alert">{importError}</span>}
+        {importError && <span className="snsl-toolbar-err" role="alert">{importError[lang]}</span>}
       </div>
 
       {/* ── DATA INPUT ─────────────────────────────────── */}
       <section className="snsl-card" aria-labelledby="snsl-step1">
-        <h2 className="snsl-step-tag" id="snsl-step1"><span className="snsl-badge-n" aria-hidden="true">1</span>Kritéria a hodnocení</h2>
+        <h2 className="snsl-step-tag" id="snsl-step1"><span className="snsl-badge-n" aria-hidden="true">1</span>{tr('Kritéria a hodnocení', 'Criteria and ratings')}</h2>
 
         <div className="snsl-config-row">
           <div>
-            <label className="snsl-field-label" htmlFor="snsl-n-crit">Počet kritérií</label>
+            <label className="snsl-field-label" htmlFor="snsl-n-crit">{tr('Počet kritérií', 'Number of criteria')}</label>
             <select id="snsl-n-crit" className="snsl-select" value={nCrit}
               onChange={e => { setNCrit(Number(e.target.value)); setFocus(0); }}>
               {[2,3,4,5,6].map(n => <option key={n}>{n}</option>)}
             </select>
           </div>
           <div>
-            <label className="snsl-field-label" htmlFor="snsl-n-alts">Počet alternativ</label>
+            <label className="snsl-field-label" htmlFor="snsl-n-alts">{tr('Počet alternativ', 'Number of alternatives')}</label>
             <select id="snsl-n-alts" className="snsl-select" value={nAlts} onChange={e => setNAlts(Number(e.target.value))}>
               {[2,3,4,5].map(n => <option key={n}>{n}</option>)}
             </select>
@@ -211,22 +217,26 @@ export default function SensitivityLab() {
 
         {/* Criteria row */}
         <div className="snsl-crit-grid">
-          <div className="snsl-crit-header" aria-hidden="true"><span>Název kritéria</span><span>Typ</span><span>Váha</span><span className="snsl-right">Podíl</span></div>
+          <div className="snsl-crit-header" aria-hidden="true"><span>{tr('Název kritéria', 'Criterion name')}</span><span>{tr('Typ', 'Type')}</span><span>{tr('Váha', 'Weight')}</span><span className="snsl-right">{tr('Podíl', 'Share')}</span></div>
           {cNames.map((name, j) => (
             <div key={j} className="snsl-crit-row">
-              <input className="snsl-input" value={name} aria-label={`Název kritéria ${j + 1}`}
+              <input className="snsl-input" value={name} aria-label={tr(`Název kritéria ${j + 1}`, `Criterion name ${j + 1}`)}
                 onChange={e => { const n=[...critNames]; n[j]=e.target.value; setCritNames(n); }} />
               <button
                 type="button"
                 className={`snsl-type-btn${critTypes[j]==='cost'?' snsl-type-btn--cost':''}`}
-                aria-label={`Typ kritéria ${name}: ${critTypes[j]==='benefit'?'benefit, více je lépe':'cost, méně je lépe'}. Kliknutím přepnete.`}
+                aria-label={tr(
+                  `Typ kritéria ${name}: ${critTypes[j]==='benefit'?'benefit, více je lépe':'cost, méně je lépe'}. Kliknutím přepnete.`,
+                  `Criterion type ${name}: ${critTypes[j]==='benefit'?'benefit, more is better':'cost, less is better'}. Click to switch.`,
+                )}
                 onClick={() => setCritTypes(prev => prev.map((t,i) => i===j?(t==='benefit'?'cost':'benefit'):t))}>
                 <span aria-hidden="true">{critTypes[j]==='benefit'?'↑ Benefit':'↓ Cost'}</span>
               </button>
               <input type="range" min={0} max={100} className="snsl-slider" value={weights[j]}
-                aria-label={`Váha kritéria ${name}`} aria-valuetext={`${weights[j]} bodů, podíl ${Math.round(normW[j]*100)} %`}
+                aria-label={tr(`Váha kritéria ${name}`, `Weight of criterion ${name}`)}
+                aria-valuetext={tr(`${weights[j]} bodů, podíl ${Math.round(normW[j]*100)} %`, `${weights[j]} points, share ${Math.round(normW[j]*100)}%`)}
                 onChange={e => setWeights(prev => prev.map((w,i) => i===j?Number(e.target.value):w))} />
-              <span className="snsl-right snsl-w-pct">{Math.round(normW[j]*100)} %</span>
+              <span className="snsl-right snsl-w-pct">{Math.round(normW[j]*100)}{tr(' %', '%')}</span>
             </div>
           ))}
         </div>
@@ -236,7 +246,7 @@ export default function SensitivityLab() {
           <table className="snsl-table">
             <thead>
               <tr>
-                <th scope="col" className="snsl-th-empty">Alternativa</th>
+                <th scope="col" className="snsl-th-empty">{tr('Alternativa', 'Alternative')}</th>
                 {cNames.map((cn, j) => (
                   <th key={j} scope="col" className="snsl-th">
                     {cn}<br/><span className="snsl-th-type">{critTypes[j]==='benefit'?'↑ benefit':'↓ cost'}</span>
@@ -248,13 +258,13 @@ export default function SensitivityLab() {
               {aNames.map((an, ai) => (
                 <tr key={ai}>
                   <td className="snsl-td-alt">
-                    <input className="snsl-input" value={an} aria-label={`Název alternativy ${ai + 1}`}
+                    <input className="snsl-input" value={an} aria-label={tr(`Název alternativy ${ai + 1}`, `Alternative name ${ai + 1}`)}
                       onChange={e => { const n=[...altNames]; n[ai]=e.target.value; setAltNames(n); }} />
                   </td>
                   {cNames.map((cn, j) => (
                     <td key={j} className="snsl-td">
                       <input type="number" min={0} max={100} className="snsl-num"
-                        aria-label={`Hodnocení ${an} podle ${cn}`}
+                        aria-label={tr(`Hodnocení ${an} podle ${cn}`, `Rating of ${an} on ${cn}`)}
                         value={ratings[ai][j]}
                         onChange={e => setRatings(prev =>
                           prev.map((row, r) => r===ai ? row.map((c,ci) => ci===j?Number(e.target.value):c) : row)
@@ -270,11 +280,11 @@ export default function SensitivityLab() {
 
       {/* ── CHART ──────────────────────────────────────── */}
       <section className="snsl-card" aria-labelledby="snsl-step2">
-        <h2 className="snsl-step-tag" id="snsl-step2"><span className="snsl-badge-n" aria-hidden="true">2</span>Graf citlivosti</h2>
+        <h2 className="snsl-step-tag" id="snsl-step2"><span className="snsl-badge-n" aria-hidden="true">2</span>{tr('Graf citlivosti', 'Sensitivity chart')}</h2>
 
         {/* Criterion selector */}
         <div className="snsl-focus-row" role="group" aria-labelledby="snsl-focus-label">
-          <span className="snsl-field-label" id="snsl-focus-label" style={{ marginBottom: 0 }}>Analyzované kritérium:</span>
+          <span className="snsl-field-label" id="snsl-focus-label" style={{ marginBottom: 0 }}>{tr('Analyzované kritérium:', 'Criterion analysed:')}</span>
           {cNames.map((name, j) => (
             <button type="button" key={j}
               className={`snsl-focus-btn${focus===j?' snsl-focus-btn--active':''}`}
@@ -285,21 +295,24 @@ export default function SensitivityLab() {
           ))}
         </div>
 
-        <div role="img" aria-label={`Spojnicový graf: celkové skóre alternativ v závislosti na váze kritéria ${cNames[focus]} od 0 do 100 %. Shrnutí je v části Interpretace.`}>
+        <div role="img" aria-label={tr(
+          `Spojnicový graf: celkové skóre alternativ v závislosti na váze kritéria ${cNames[focus]} od 0 do 100 %. Shrnutí je v části Interpretace.`,
+          `Line chart: total scores of alternatives as the weight of criterion ${cNames[focus]} goes from 0 to 100%. A summary is in the Interpretation section.`,
+        )}>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#DDE3ED" />
             {/* Číselná osa: svislé čáry (aktuální váha, přechodové body) leží i mimo vzorky po 2 % */}
             <XAxis dataKey="pct" type="number" domain={[0, 100]} ticks={[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
               unit="%" tick={AXIS}
-              label={{ value: `Váha: ${cNames[focus]}`, position: 'insideBottom', offset: -2, ...AXIS }} />
+              label={{ value: `${tr('Váha', 'Weight')}: ${cNames[focus]}`, position: 'insideBottom', offset: -2, ...AXIS }} />
             <YAxis unit="%" domain={[0, 100]} tick={AXIS} width={44} />
             <Tooltip
-              formatter={(v, name) => [`${v.toFixed(1)} %`, name]}
+              formatter={(v, name) => [`${v.toFixed(1)}${tr(' %', '%')}`, name]}
               contentStyle={{ fontSize: 14, borderRadius: 8, border: '1px solid #7A869C' }} />
             <Legend wrapperStyle={{ fontSize: 14 }} />
             <ReferenceLine x={currentPct} stroke="#4A5875" strokeDasharray="5 4"
-              label={{ value: 'Aktuální', position: 'insideTopLeft', ...AXIS }} />
+              label={{ value: tr('Aktuální', 'Current'), position: 'insideTopLeft', ...AXIS }} />
             {crossovers.map((co, i) => (
               <ReferenceLine key={i} x={co.pct} stroke="#B45309" strokeDasharray="3 3" strokeWidth={1.5} />
             ))}
@@ -312,28 +325,34 @@ export default function SensitivityLab() {
           </LineChart>
         </ResponsiveContainer>
         </div>
-        <p className="snsl-chart-note">Čáry se liší barvou i vzorem. Svislá přerušovaná čára = aktuální váha, oranžové čáry = přechodové body.</p>
+        <p className="snsl-chart-note">{tr(
+          'Čáry se liší barvou i vzorem. Svislá přerušovaná čára = aktuální váha, oranžové čáry = přechodové body.',
+          'Lines differ in colour and pattern. Vertical dashed line = current weight, orange lines = crossover points.',
+        )}</p>
       </section>
 
       {/* ── INSIGHTS ───────────────────────────────────── */}
       <section className="snsl-card" aria-labelledby="snsl-step3" aria-live="polite">
-        <h2 className="snsl-step-tag" id="snsl-step3"><span className="snsl-badge-n" aria-hidden="true">3</span>Interpretace</h2>
+        <h2 className="snsl-step-tag" id="snsl-step3"><span className="snsl-badge-n" aria-hidden="true">3</span>{tr('Interpretace', 'Interpretation')}</h2>
         <div className="snsl-insights">
           <div className="snsl-insight-item">
-            <span className="snsl-insight-label">Aktuální váha {cNames[focus]}</span>
-            <span className="snsl-insight-val">{currentPct} %</span>
+            <span className="snsl-insight-label">{tr('Aktuální váha', 'Current weight of')} {cNames[focus]}</span>
+            <span className="snsl-insight-val">{currentPct}{tr(' %', '%')}</span>
           </div>
           {crossovers.length === 0 ? (
             <div className="snsl-insight-ok">
-              Žádný přechodový bod — pořadí alternativ je robustní vůči změně váhy {cNames[focus]}.
+              {tr(
+                `Žádný přechodový bod — pořadí alternativ je robustní vůči změně váhy ${cNames[focus]}.`,
+                `No crossover point — the ranking of alternatives is robust to changes in the weight of ${cNames[focus]}.`,
+              )}
             </div>
           ) : (
             crossovers.map((co, i) => (
               <div key={i} className="snsl-insight-warn">
-                <span className="snsl-insight-cross">Přechodový bod při {co.pct.toFixed(0)} %</span>
-                &nbsp;— pořadí {aNames[co.a]} a {aNames[co.b]} se změní.
+                <span className="snsl-insight-cross">{tr(`Přechodový bod při ${co.pct.toFixed(0)} %`, `Crossover point at ${co.pct.toFixed(0)}%`)}</span>
+                &nbsp;— {tr(`pořadí ${aNames[co.a]} a ${aNames[co.b]} se změní.`, `the order of ${aNames[co.a]} and ${aNames[co.b]} changes.`)}
                 {Math.abs(co.pct - currentPct) < 10 && (
-                  <span className="snsl-insight-risky"> Blízko aktuální váhy — vyžaduje pozornost!</span>
+                  <span className="snsl-insight-risky"> {tr('Blízko aktuální váhy — vyžaduje pozornost!', 'Close to the current weight — needs attention!')}</span>
                 )}
               </div>
             ))
